@@ -18,6 +18,5 @@ Este repositorio comeca pela documentacao de projeto antes da implementacao. A i
 - `CON-ML-ET-0006A-Especificacoes de Requisitos do Modulo de Interface (ITM).pdf`
 - `Interface Tubeira Movel-Firmware V1_0.pptx`
 
-Observacao: o PDF de requisitos foi extraido com senha fornecida pelo usuario e incorporado como referencia formal inicial. A apresentacao segue como referencia de arquitetura e contexto.
 
 
