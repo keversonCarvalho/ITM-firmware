@@ -20,12 +20,4 @@ Este repositorio comeca pela documentacao de projeto antes da implementacao. A i
 
 Observacao: o PDF de requisitos foi extraido com senha fornecida pelo usuario e incorporado como referencia formal inicial. A apresentacao segue como referencia de arquitetura e contexto.
 
-## Proximo Marco
 
-O proximo marco recomendado e transformar estes documentos em um projeto de firmware versionado:
-
-1. Inicializar Git e convencoes de contribuicao.
-2. Definir alvo exato do microcontrolador STM32G473 e toolchain.
-3. Criar esqueleto do firmware com camadas `app`, `services`, `protocols`, `drivers`, `platform` e `tests`.
-4. Selecionar RTOS, pilha CANopen ECSS/CiA 301, estrategia de testes e biblioteca de mocks.
-5. Construir simuladores/mocks para RS-422 do BC, RS-485 da CEB, CAN dos BMS e CANopen da RET antes de integrar hardware real.
