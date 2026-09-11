@@ -10,7 +10,6 @@ Este repositorio comeca pela documentacao de projeto antes da implementacao. A i
 - [Requisitos iniciais](docs/02-requisitos-iniciais.md)
 - [Arquitetura de firmware](docs/03-arquitetura-firmware.md)
 - [Plano de desenvolvimento](docs/04-plano-desenvolvimento.md)
-- [Fluxo de trabalho com IA](docs/05-fluxo-com-ia.md)
 - [Questoes abertas](docs/06-questoes-abertas.md)
 - [Matriz de rastreabilidade inicial](docs/07-matriz-rastreabilidade-inicial.md)
 
