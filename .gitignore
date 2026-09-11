@@ -1,0 +1,16 @@
+# Reference documents are intentionally kept local.
+*.pdf
+*.pptx
+
+# Build outputs and local tooling.
+build/
+cmake-build-*/
+out/
+.vscode/
+.idea/
+
+# OS/editor noise.
+Thumbs.db
+Desktop.ini
+*.swp
+*.tmp
