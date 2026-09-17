@@ -54,12 +54,14 @@ cmake --build build --target itm_lely_od
 - [Plano de desenvolvimento](docs/04-plano-desenvolvimento.md)
 - [Questoes abertas](docs/06-questoes-abertas.md)
 - [Matriz de rastreabilidade inicial](docs/07-matriz-rastreabilidade-inicial.md)
+- [Mapa de hardware Rev00](docs/08-mapa-hardware-rev00.md)
 - [Decisoes de arquitetura](docs/decisions/)
 
 ## Referencias Locais
 
 - `CON-ML-ET-0006A-Especificacoes de Requisitos do Modulo de Interface (ITM).pdf`
 - `Interface Tubeira Movel-Firmware V1_0.pptx`
+- `ITM-100 Rev00 _ Schematic diagram.pdf`
 
 
 

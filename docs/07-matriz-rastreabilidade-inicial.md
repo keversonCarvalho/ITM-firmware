@@ -24,7 +24,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 
 | Item | Estado | Evidencia atual | Pendencia para conclusao |
 | --- | --- | --- | --- |
-| `ports/*` | Implementado no host | Contratos C para clock, GPIO, flash, CAN e serial; mocks | Adaptadores STM32 e mapeamento de perifericos |
+| `ports/*` | Implementado no host | Contratos C para clock, GPIO, flash, CAN e serial; mocks; mapa Rev00 levantado | Adaptadores STM32, DMA, IRQ e configuracao CubeMX |
 | `services/bc_supervisor` | Parcial | Testes aprovados de perda, bloqueio e recuperacao | Semantica e temporizacao oficiais das 3 tentativas |
 | `app/cb_monitor` | Parcial | Testes aprovados de limiar, zona indeterminada, debounce e tabela configuravel | Tabela verdade oficial e periodo de amostragem |
 | `app/power_control` | Parcial | Testes aprovados de sequenciamento e perda de permissao | Estados seguros, intertravamentos, realimentacoes e tempos oficiais |
@@ -33,7 +33,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
 | CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
 | Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
-| STM32H723VGT6/FreeRTOS | Parcial | MCU e encapsulamento confirmados; arquitetura preparada para adaptadores | Esquematico, pinagem, CubeMX, toolchain ARM, mapa de memoria/cache e escalonamento |
+| STM32H723VGT6/FreeRTOS | Parcial | MCU, encapsulamento e pinagem Rev00 documentados; arquitetura preparada para adaptadores | Aprovacao do esquema, CubeMX, toolchain ARM, DMA/IRQ, mapa de memoria/cache e escalonamento |
 
 `Implementado no host` nao significa qualificado para voo. A conclusao de cada
 requisito depende das evidencias de integracao, HIL e qualificacao previstas no

@@ -14,11 +14,18 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 ## Hardware
 
 - Microcontrolador confirmado: STM32H723VGT6, encapsulamento LQFP100. Ainda
-  faltam o esquematico e a pinagem para confirmar a alocacao dos perifericos.
-- Quais perifericos serao usados: FDCAN, USART, DMA, timers, ADCs, GPIOs?
+  depende da aprovacao do esquematico Rev00 para congelar a pinagem.
+- O esquema Rev00 define FDCAN1-3, UART4/5/7, ADC1 e GPIOs. Faltam canais DMA,
+  prioridades de interrupcao, timers e watchdog.
 - Quais regioes de memoria receberao stacks, buffers DMA, Object Dictionary e
   telemetria, e qual sera a politica de MPU/cache do Cortex-M7?
+- Os nomes das nets ADC serao corrigidos? No esquema Rev00, PA4/PA5 estao
+  nomeados como canal 3, mas correspondem ao par diferencial ADC1 canal 18;
+  PA6/PA7 estao nomeados como canal 4, mas correspondem ao canal 3.
 - Quais saidas fisicas comandam a alimentacao da CEB e do CB?
+- Confirmar a nomenclatura funcional das saidas `BOB_CONT_+` e `+28V_CEB`,
+  comandadas por `MFET1` e `MFET2`, antes de associa-las definitivamente aos
+  estados CB/CEB no firmware.
 - Existem leituras de confirmacao de contatores/reles?
 - Existem entradas de intertravamento ou emergencia?
 - Qual sinal confirma `ceb_power_good`? Afeta `app/power_control` e
@@ -46,6 +53,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 
 - Qual baud rate e formato da RS-422 com o Banco de Controle?
 - Qual baud rate e formato da RS-485 da CEB?
+- Confirmar se as interfaces CEB TLM e CEB CMD operam como RS-485 full-duplex
+  ou RS-422. O esquema usa transceptores ISOW1432 e pares TX/RX separados, com
+  `DE` controlado pelo MCU.
 - Quais IDs CAN dos BMS 28 V e 150 V?
 - Qual baud rate das redes CAN dos BMS?
 - Qual Node-ID do ITM?
