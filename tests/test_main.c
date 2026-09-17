@@ -8,11 +8,22 @@ bool test_canopen_identity_uses_registered_vendor_id(void);
 bool test_canopen_rejects_identity_write(void);
 bool test_canopen_persists_node_id_on_save_command(void);
 bool test_canopen_validates_node_id_range(void);
+bool test_canopen_captures_telemetry_through_snapshot_port(void);
 bool test_diagnostics_keeps_recent_events(void);
 bool test_persistence_uses_latest_valid_slot(void);
 bool test_persistence_survives_interrupted_write(void);
 bool test_power_control_sequences_outputs(void);
 bool test_power_control_fails_safe(void);
+bool test_telemetry_update_read_and_validation(void);
+bool test_telemetry_timestamp_and_quality_transitions(void);
+bool test_telemetry_snapshot_consistency_and_producer_isolation(void);
+bool test_telemetry_counter_and_timestamp_wraparound(void);
+bool test_telemetry_serialization_is_deterministic(void);
+bool test_telemetry_static_memory_budget(void);
+bool test_telemetry_ring_drops_oldest(void);
+bool test_telemetry_ring_rejects_newest(void);
+bool test_telemetry_ring_signals_fault(void);
+bool test_telemetry_normalizer_uses_integer_affine_rule(void);
 
 int itm_run_test(const char *name, itm_test_fn_t function)
 {
@@ -40,6 +51,9 @@ int main(void)
                              test_canopen_persists_node_id_on_save_command);
     failures += itm_run_test("CANopen node-ID range",
                              test_canopen_validates_node_id_range);
+    failures += itm_run_test(
+        "CANopen telemetry snapshot port",
+        test_canopen_captures_telemetry_through_snapshot_port);
     failures += itm_run_test("diagnostic event history",
                              test_diagnostics_keeps_recent_events);
     failures += itm_run_test("persistence latest slot",
@@ -50,6 +64,27 @@ int main(void)
                              test_power_control_sequences_outputs);
     failures += itm_run_test("power fail-safe",
                              test_power_control_fails_safe);
+    failures += itm_run_test("telemetry update and validation",
+                             test_telemetry_update_read_and_validation);
+    failures += itm_run_test("telemetry quality transitions",
+                             test_telemetry_timestamp_and_quality_transitions);
+    failures += itm_run_test(
+        "telemetry consistent snapshot and producer isolation",
+        test_telemetry_snapshot_consistency_and_producer_isolation);
+    failures += itm_run_test("telemetry counter and timestamp wraparound",
+                             test_telemetry_counter_and_timestamp_wraparound);
+    failures += itm_run_test("telemetry deterministic serialization",
+                             test_telemetry_serialization_is_deterministic);
+    failures += itm_run_test("telemetry static memory budget",
+                             test_telemetry_static_memory_budget);
+    failures += itm_run_test("telemetry ring drops oldest",
+                             test_telemetry_ring_drops_oldest);
+    failures += itm_run_test("telemetry ring rejects newest",
+                             test_telemetry_ring_rejects_newest);
+    failures += itm_run_test("telemetry ring signals fault",
+                             test_telemetry_ring_signals_fault);
+    failures += itm_run_test("telemetry integer normalization",
+                             test_telemetry_normalizer_uses_integer_affine_rule);
 
     printf("\n%d test(s) failed\n", failures);
     return failures == 0 ? 0 : 1;

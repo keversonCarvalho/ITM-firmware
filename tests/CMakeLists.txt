@@ -6,6 +6,10 @@ add_executable(itm_tests
     test_diagnostics.c
     test_persistence.c
     test_power_control.c
+    test_telemetry_ring.c
+    test_telemetry_normalizer.c
+    test_telemetry_store.c
+    mocks/mock_critical.c
     mocks/mock_flash.c
     mocks/mock_ports.c
 )

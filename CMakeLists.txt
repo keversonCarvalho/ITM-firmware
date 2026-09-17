@@ -28,10 +28,14 @@ endif()
 add_library(itm_core STATIC
     src/app/cb_monitor.c
     src/app/power_control.c
+    src/app/telemetry_catalog.c
     src/services/bc_supervisor.c
     src/services/canopen_ret.c
     src/services/diagnostics.c
     src/services/persistence.c
+    src/services/telemetry_ring.c
+    src/services/telemetry_normalizer.c
+    src/services/telemetry_store.c
 )
 
 target_include_directories(itm_core PUBLIC include)

@@ -91,6 +91,7 @@ bool itm_canopen_ret_init(itm_canopen_ret_t *service,
     service->identity = identity;
     service->config = defaults;
     service->persistence = persistence;
+    service->telemetry_snapshot = (itm_telemetry_snapshot_port_t){0};
     service->error_register = 0U;
     service->configuration_dirty = false;
 
@@ -254,4 +255,27 @@ uint32_t itm_canopen_pack_revision(uint8_t major, uint8_t minor,
 {
     return ((uint32_t)major << 16U) | ((uint32_t)minor << 8U) |
            (uint32_t)patch;
+}
+
+bool itm_canopen_ret_bind_telemetry(
+    itm_canopen_ret_t *service,
+    itm_telemetry_snapshot_port_t telemetry_snapshot)
+{
+    if ((service == NULL) || (telemetry_snapshot.capture == NULL)) {
+        return false;
+    }
+    service->telemetry_snapshot = telemetry_snapshot;
+    return true;
+}
+
+itm_result_t itm_canopen_ret_capture_telemetry(
+    itm_canopen_ret_t *service, uint32_t now_ms,
+    itm_telemetry_snapshot_t *snapshot)
+{
+    if ((service == NULL) || (snapshot == NULL) ||
+        (service->telemetry_snapshot.capture == NULL)) {
+        return ITM_ERROR_NOT_READY;
+    }
+    return service->telemetry_snapshot.capture(
+        service->telemetry_snapshot.context, now_ms, snapshot);
 }

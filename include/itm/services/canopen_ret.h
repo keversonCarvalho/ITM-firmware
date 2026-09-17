@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include "itm/core/result.h"
 #include "itm/services/persistence.h"
+#include "itm/services/telemetry_store.h"
 
 #define ITM_CANOPEN_VENDOR_ID 0x000006A9UL
 #define ITM_CANOPEN_BIT_RATE 500000UL
@@ -52,6 +53,7 @@ typedef struct {
     itm_canopen_identity_t identity;
     itm_canopen_persistent_config_t config;
     itm_persistence_t *persistence;
+    itm_telemetry_snapshot_port_t telemetry_snapshot;
     uint8_t error_register;
     bool configuration_dirty;
 } itm_canopen_ret_t;
@@ -69,5 +71,11 @@ itm_sdo_abort_t itm_canopen_ret_sdo_write(itm_canopen_ret_t *service,
                                           const uint8_t *data, size_t size);
 uint32_t itm_canopen_pack_revision(uint8_t major, uint8_t minor,
                                   uint8_t patch);
+bool itm_canopen_ret_bind_telemetry(
+    itm_canopen_ret_t *service,
+    itm_telemetry_snapshot_port_t telemetry_snapshot);
+itm_result_t itm_canopen_ret_capture_telemetry(
+    itm_canopen_ret_t *service, uint32_t now_ms,
+    itm_telemetry_snapshot_t *snapshot);
 
 #endif

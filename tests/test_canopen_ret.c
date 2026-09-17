@@ -1,5 +1,6 @@
 #include "test_framework.h"
 #include "mocks/mock_flash.h"
+#include "mocks/mock_critical.h"
 #include "itm/services/canopen_ret.h"
 
 #include <string.h>
@@ -89,5 +90,34 @@ bool test_canopen_validates_node_id_range(void)
                    itm_canopen_ret_sdo_write(&service, ITM_OD_NODE_ID, 0U,
                                              &invalid_node_id,
                                              sizeof(invalid_node_id)));
+    return true;
+}
+
+bool test_canopen_captures_telemetry_through_snapshot_port(void)
+{
+    mock_flash_t flash;
+    mock_critical_t critical;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    itm_telemetry_store_t telemetry;
+    itm_telemetry_snapshot_t snapshot;
+
+    mock_critical_init(&critical);
+    TEST_ASSERT(itm_telemetry_store_init(&telemetry,
+                                         mock_critical_port(&critical)));
+    TEST_ASSERT_EQ(ITM_ERROR_NOT_READY,
+                   itm_canopen_ret_capture_telemetry(&service, 10U,
+                                                     &snapshot));
+    TEST_ASSERT(itm_canopen_ret_bind_telemetry(
+        &service, itm_telemetry_store_snapshot_port(&telemetry)));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
+                               &telemetry, ITM_SOURCE_CEB,
+                               ITM_SIGNAL_CEB_TEMPERATURE,
+                               ITM_SIGNAL_TYPE_I32, 2500, 10U));
+    TEST_ASSERT_EQ(ITM_OK,
+                   itm_canopen_ret_capture_telemetry(&service, 10U,
+                                                     &snapshot));
+    TEST_ASSERT_EQ(2500,
+                   snapshot.values[ITM_SIGNAL_CEB_TEMPERATURE].value);
     return true;
 }
