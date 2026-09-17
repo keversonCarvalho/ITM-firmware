@@ -33,7 +33,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
 | CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
 | Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
-| STM32/FreeRTOS | Nao iniciado | Arquitetura preparada para adaptadores | Hardware, pinagem, CubeMX, toolchain ARM e escalonamento |
+| STM32H723VGT6/FreeRTOS | Parcial | MCU e encapsulamento confirmados; arquitetura preparada para adaptadores | Esquematico, pinagem, CubeMX, toolchain ARM, mapa de memoria/cache e escalonamento |
 
 `Implementado no host` nao significa qualificado para voo. A conclusao de cada
 requisito depende das evidencias de integracao, HIL e qualificacao previstas no

@@ -44,7 +44,8 @@ Nao invente valores ausentes; marque como TBD.
 
 ```text
 Projete o modulo <nome> do firmware do ITM.
-Considere STM32G473, RTOS, testes em host, fail-safe e isolamento de HAL.
+Considere STM32H723VGT6, RTOS, testes em host, fail-safe, isolamento de HAL e os
+cuidados de coerencia de cache exigidos por DMA no Cortex-M7.
 Entregue responsabilidades, interfaces C, maquina de estados, falhas, testes unitarios e riscos.
 ```
 

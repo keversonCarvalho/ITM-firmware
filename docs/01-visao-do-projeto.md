@@ -38,7 +38,8 @@ O ITM-100 possui dois blocos funcionais principais:
 
 ## Premissas Tecnicas
 
-- Microcontrolador alvo: familia STM32G473, conforme apresentacao.
+- Microcontrolador alvo confirmado: STM32H723VGT6 (Arm Cortex-M7, encapsulamento
+  LQFP100).
 - Camada de baixo nivel baseada em STM32 HAL.
 - Uso de RTOS ou SafeRTOS ainda a decidir.
 - Pilha CANopen candidata: N7 CANopen, citada na apresentacao, desde que cubra ECSS-E-ST-50-15C e CiA 301.

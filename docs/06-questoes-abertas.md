@@ -13,8 +13,11 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 
 ## Hardware
 
-- Qual variante exata do STM32G473 sera usada?
+- Microcontrolador confirmado: STM32H723VGT6, encapsulamento LQFP100. Ainda
+  faltam o esquematico e a pinagem para confirmar a alocacao dos perifericos.
 - Quais perifericos serao usados: FDCAN, USART, DMA, timers, ADCs, GPIOs?
+- Quais regioes de memoria receberao stacks, buffers DMA, Object Dictionary e
+  telemetria, e qual sera a politica de MPU/cache do Cortex-M7?
 - Quais saidas fisicas comandam a alimentacao da CEB e do CB?
 - Existem leituras de confirmacao de contatores/reles?
 - Existem entradas de intertravamento ou emergencia?

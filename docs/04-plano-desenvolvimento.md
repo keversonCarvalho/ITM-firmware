@@ -62,13 +62,15 @@ Entregaveis:
 - Simuladores de BC, CEB e BMS.
 - Testes de integracao em host.
 
-## Fase 4 - Port Para STM32G473
+## Fase 4 - Port Para STM32H723VGT6
 
 Objetivo: levar o firmware para hardware alvo.
 
 Entregaveis:
 
 - Configuracao de clock, GPIO, CAN/FDCAN, UART, DMA, timers e watchdog.
+- Configuracao explicita de MPU, caches e posicionamento de buffers usados por
+  DMA, considerando a arquitetura de memoria do Cortex-M7.
 - Camada HAL encapsulada.
 - RTOS ou SafeRTOS integrado.
 - Drivers de saida para controle de alimentacao.
