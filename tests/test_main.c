@@ -4,6 +4,10 @@ bool test_bc_supervisor_trips_after_configured_attempts(void);
 bool test_bc_supervisor_recovers_on_valid_frame(void);
 bool test_cb_monitor_debounces_and_matches_expected_state(void);
 bool test_cb_monitor_reports_indeterminate_voltage(void);
+bool test_canopen_identity_uses_registered_vendor_id(void);
+bool test_canopen_rejects_identity_write(void);
+bool test_canopen_persists_node_id_on_save_command(void);
+bool test_canopen_validates_node_id_range(void);
 bool test_diagnostics_keeps_recent_events(void);
 bool test_persistence_uses_latest_valid_slot(void);
 bool test_persistence_survives_interrupted_write(void);
@@ -28,6 +32,14 @@ int main(void)
                              test_cb_monitor_debounces_and_matches_expected_state);
     failures += itm_run_test("CB indeterminate voltage",
                              test_cb_monitor_reports_indeterminate_voltage);
+    failures += itm_run_test("CANopen registered vendor identity",
+                             test_canopen_identity_uses_registered_vendor_id);
+    failures += itm_run_test("CANopen identity is read-only",
+                             test_canopen_rejects_identity_write);
+    failures += itm_run_test("CANopen persistent node-ID",
+                             test_canopen_persists_node_id_on_save_command);
+    failures += itm_run_test("CANopen node-ID range",
+                             test_canopen_validates_node_id_range);
     failures += itm_run_test("diagnostic event history",
                              test_diagnostics_keeps_recent_events);
     failures += itm_run_test("persistence latest slot",

@@ -1,6 +1,7 @@
 #ifndef ITM_SERVICES_PERSISTENCE_H
 #define ITM_SERVICES_PERSISTENCE_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "itm/core/result.h"

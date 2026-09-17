@@ -1,0 +1,191 @@
+[FileInfo]
+FileName=itm-100.eds
+FileVersion=1
+FileRevision=0
+EDSVersion=4.0
+Description=ITM-100 CANopen device for RET integration
+CreationTime=00:00AM
+CreationDate=09-17-2026
+CreatedBy=Concert Space
+ModificationTime=00:00AM
+ModificationDate=09-17-2026
+ModifiedBy=Concert Space
+
+[DeviceInfo]
+VendorName=Concert Space
+VendorNumber=0x000006A9
+ProductName=ITM-100
+ProductNumber=0x00000000
+RevisionNumber=0x00010200
+OrderCode=ITM-100-1.0
+BaudRate_10=0
+BaudRate_20=0
+BaudRate_50=0
+BaudRate_125=0
+BaudRate_250=0
+BaudRate_500=1
+BaudRate_800=0
+BaudRate_1000=0
+SimpleBootUpMaster=0
+SimpleBootUpSlave=1
+Granularity=8
+DynamicChannelsSupported=0
+GroupMessaging=0
+NrOfRXPDO=0
+NrOfTXPDO=0
+LSS_Supported=0
+
+[DeviceCommissioning]
+NodeID=0xFF
+Baudrate=500
+
+[MandatoryObjects]
+SupportedObjects=3
+1=0x1000
+2=0x1001
+3=0x1018
+
+[OptionalObjects]
+SupportedObjects=4
+1=0x1008
+2=0x100A
+3=0x1010
+4=0x1017
+
+[ManufacturerObjects]
+SupportedObjects=3
+1=0x2000
+2=0x2001
+3=0x2002
+
+[1000]
+ParameterName=Device type
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1001]
+ParameterName=Error register
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=0
+PDOMapping=1
+
+[1008]
+ParameterName=Manufacturer device name
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+DefaultValue=ITM-100
+PDOMapping=0
+
+[100A]
+ParameterName=Manufacturer software version
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+DefaultValue=1.2.0
+PDOMapping=0
+
+[1010]
+ParameterName=Store parameters
+ObjectType=0x8
+SubNumber=2
+
+[1010sub0]
+ParameterName=Highest sub-index supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+
+[1010sub1]
+ParameterName=Save all parameters
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=1
+PDOMapping=0
+
+[1017]
+ParameterName=Producer heartbeat time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1018]
+ParameterName=Identity object
+ObjectType=0x9
+SubNumber=5
+
+[1018sub0]
+ParameterName=Highest sub-index supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=4
+PDOMapping=0
+
+[1018sub1]
+ParameterName=Vendor-ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0x000006A9
+PDOMapping=0
+
+[1018sub2]
+ParameterName=Product code
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1018sub3]
+ParameterName=Revision number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0x00010200
+PDOMapping=0
+
+[1018sub4]
+ParameterName=Serial number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2000]
+ParameterName=Configuration version
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2001]
+ParameterName=Configured node-ID
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+LowLimit=1
+HighLimit=127
+DefaultValue=1
+PDOMapping=0
+
+[2002]
+ParameterName=RET telemetry period in milliseconds
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+DefaultValue=10
+PDOMapping=0
