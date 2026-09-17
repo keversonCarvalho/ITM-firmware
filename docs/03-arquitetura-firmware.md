@@ -130,6 +130,26 @@ Primeira implementacao:
 - Adaptacao de CAN frames, timers e NMT da Lely para FDCAN/FreeRTOS fica restrita
   a futura camada `platform/lely`.
 
+### Pipeline De Telemetria
+
+```text
+drivers/protocols -> normalizacao inteira -> telemetry_store
+                                           |-> snapshot -> CANopen RET
+                                           |-> ring, somente quando houver fila
+```
+
+- O catalogo imutavel define ID, tipo, unidade, expoente decimal, origem, faixa
+  e timeout de stale de cada sinal.
+- O store mantem apenas ultimo valor, timestamp, qualidade e contador.
+- A origem e validada para impedir escrita cruzada entre produtores.
+- A normalizacao usa regra inteira `raw * numerator / denominator + offset`.
+- O snapshot e consistente e obtido por uma porta abstrata de secao critica.
+- O CANopen recebe uma interface de snapshot, sem conhecer locks ou produtores.
+- Ring buffers oferecem politicas separadas para historico, fluxo descartavel e
+  fluxo cuja perda deve gerar falha.
+- A serializacao de teste usa 16 bytes por sinal em little-endian, mas nao e um
+  mapeamento TPDO e nao deve ser tratada como contrato da RET.
+
 ### Servico DDS
 
 Responsavel por comunicacao DDS Micro XRCE, se confirmada:

@@ -16,6 +16,9 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `app/cb_monitor` | REQ-ITM10, 37, 38, 39, 59 | Conversao ADC para booleano, zona indeterminada, debounce, tabela verdade de falhas e diagnosticos. |
 | `app/telemetry_router` | REQ-ITM 15, 25, 26, 34, 40 | Agregacao CEB/BMS, validade, publicacao CANopen/RET, frequencia 100 Hz quando aplicavel. |
 | `app/diagnostics` | REQ-ITM 31, 39, 60, 61, 67, 68, 70 | Eventos de falha, contadores, FMEA inicial, estados seguros e evidencias para ensaios. |
+| `app/telemetry_catalog` | REQ-ITM15, 25, 26, 40 | Catalogo estatico, tipos, origens, escalas, faixas e freshness por sinal. |
+| `services/telemetry_store` | REQ-ITM13, 15, 25, 26, 40 | Concorrencia, validacao, stale, snapshot consistente, serializacao e memoria. |
+| `services/telemetry_ring` | REQ-ITM13, 40 | Ordem FIFO, overflow e politicas de perda por fluxo. |
 
 ## Estado Da Primeira Implementacao
 
@@ -29,6 +32,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
 | Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
 | CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
+| Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
 | STM32/FreeRTOS | Nao iniciado | Arquitetura preparada para adaptadores | Hardware, pinagem, CubeMX, toolchain ARM e escalonamento |
 
 `Implementado no host` nao significa qualificado para voo. A conclusao de cada
@@ -57,6 +61,7 @@ plano de desenvolvimento.
 | `test_persistence_*` | REQ-ITM6/7/14/18/20/23/24 | Aprovado no host |
 | `test_diagnostics_*` | REQ-ITM31/39/67/68/70 | Aprovado no host |
 | `test_canopen_*` | REQ-ITM16/17/18/19/21/24 | Aprovado no host |
+| `test_telemetry_*` | REQ-ITM13/15/25/26/40 | 10 testes aprovados no host, incluindo memoria e overflow |
 
 ## Evidencias Esperadas
 

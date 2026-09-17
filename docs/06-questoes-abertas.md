@@ -33,6 +33,11 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   provisoria e contar periodos de supervisao perdidos, com periodo e limite
   configuraveis.
 - Quais prioridades de tarefas RTOS?
+- Qual primitiva protegera o store no STM32: secao critica FreeRTOS, mutex ou
+  mascaramento de interrupcao? E necessario definir se produtores executam em
+  ISR e medir o pior tempo de bloqueio do snapshot.
+- Qual e o limite aprovado para duracao da secao critica e quantos sinais podem
+  ser copiados por snapshot sem afetar FDCAN/UART?
 
 ## Protocolos
 
@@ -83,6 +88,24 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Qual timestamp deve ser usado para telemetria?
 - Como representar validade, stale data e falha de origem?
 - Qual granularidade de diagnostico e eventos?
+- Qual e a lista definitiva de sinais de AV_BATT, ACT_BATT, CEB e CB? Afeta
+  `app/telemetry_catalog`, memoria, testes e mapeamento CANopen.
+- Para cada sinal, quais sao tipo bruto, unidade, escala, offset, faixa valida,
+  taxa de aquisicao e timeout de stale? Os oito sinais atuais e seus valores sao
+  exemplos provisorios centralizados no catalogo.
+- Timestamp igual ao anterior representa amostra valida, duplicata ou erro?
+  Provisoriamente apenas timestamps estritamente anteriores sao rejeitados.
+- Como tratar reset ou salto da base monotonicamente crescente? A comparacao
+  atual suporta wrap de 32 bits quando a distancia e menor que `2^31` ms.
+- Quais consumidores precisam de historico e qual capacidade de cada ring?
+- Qual politica de overflow pertence a cada fluxo: `DROP_OLDEST`,
+  `REJECT_NEWEST` ou `SIGNAL_FAULT`?
+- O valor anterior deve ser mantido quando uma nova amostra falha na validacao?
+  Provisoriamente ele e preservado e apenas o contador de rejeicao aumenta.
+- A divisao da normalizacao deve truncar, arredondar ou saturar? Provisoriamente
+  a divisao inteira trunca em direcao a zero e overflow e rejeitado.
+- O snapshot completo sera publicado em um ciclo ou dividido entre TPDOs com
+  diferentes cadencias? O formato interno de 16 bytes por sinal nao define TPDO.
 
 ## Seguranca E Falhas
 

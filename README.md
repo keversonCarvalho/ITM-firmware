@@ -17,6 +17,8 @@ material de referencia.
 - Servico CANopen RET com identidade CiA 301, Vendor-ID Concert Space,
   configuracao por SDO e persistencia do Node-ID.
 - EDS inicial do ITM-100 preparado para geracao estatica pela Lely `dcf2c`.
+- Registro estatico de telemetria com catalogo, qualidade, freshness, snapshots
+  consistentes, normalizacao inteira e ring buffers de capacidade fixa.
 - Contratos abstratos para relogio, saidas, flash, CAN, UART e protocolos.
 - Testes de host e mocks de hardware.
 
@@ -35,7 +37,7 @@ ctest --test-dir build --output-on-failure
 ```
 
 Como alternativa no ambiente atual, a suite foi compilada com GCC 11.4 no WSL,
-usando `-Wall -Wextra -Wpedantic -Werror`. Os 13 testes passaram.
+usando `-Wall -Wextra -Wpedantic -Werror`. Os 24 testes passaram.
 
 Quando `dcf2c` da Lely estiver instalado, o CMake disponibiliza o alvo opcional
 que gera o Object Dictionary C estatico:
