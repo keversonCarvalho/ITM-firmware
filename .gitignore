@@ -1,10 +1,10 @@
 # Reference documents are intentionally kept local.
 *.pdf
 *.pptx
-docs/
 
 # Build outputs and local tooling.
 build/
+build-*/
 cmake-build-*/
 out/
 .vscode/

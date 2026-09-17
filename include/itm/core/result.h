@@ -1,0 +1,14 @@
+#ifndef ITM_CORE_RESULT_H
+#define ITM_CORE_RESULT_H
+
+typedef enum {
+    ITM_OK = 0,
+    ITM_ERROR_INVALID_ARGUMENT,
+    ITM_ERROR_IO,
+    ITM_ERROR_NOT_FOUND,
+    ITM_ERROR_CORRUPT,
+    ITM_ERROR_NO_SPACE,
+    ITM_ERROR_NOT_READY
+} itm_result_t;
+
+#endif
