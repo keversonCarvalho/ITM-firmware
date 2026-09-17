@@ -8,7 +8,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | --- | --- | --- |
 | `platform/stm32g473` | REQ-ITM 4, 5, 11, 12, 13 | Build alvo, mapa de perifericos, teste de clock/UART/CAN, prova de capacidade por simulacao de carga. |
 | `services/persistence` | REQ-ITM 6, 7, 14, 18, 20, 23, 24 | Gravacao independente, power-fail simulado, CRC de parametros, restauracao no boot, incremento de versao. |
-| `services/canopen_ret` | REQ-ITM 15, 16, 17, 18, 19, 21, 34, 40 | SDO read/write, persistencia, Node-ID, OD read-only, PDO/telemetria, heartbeat, taxa 500 kbit/s. |
+| `services/canopen_ret` | REQ-ITM 15, 16, 17, 18, 19, 21, 24, 34, 40 | SDO read/write, persistencia, Node-ID, OD read-only, PDO/telemetria, heartbeat, taxa 500 kbit/s. |
 | `services/bms` | REQ-ITM 25 | Recepcao CAN valida, timeout, stale data, escala de sinais, falha de BMS e recuperacao. |
 | `services/ceb` | REQ-ITM 26, 27 | Parser RS-485, telemetria CEB, comandos Skyroot, erros de CRC, timeouts e comandos nao permitidos. |
 | `services/bc` | REQ-ITM 28, 29, 30, 31 | Parser RS-422, comandos de SSR, comandos de teste, perda de comunicacao, 3 tentativas e desligamento seguro. |
@@ -22,13 +22,13 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | Item | Estado | Evidencia atual | Pendencia para conclusao |
 | --- | --- | --- | --- |
 | `ports/*` | Implementado no host | Contratos C para clock, GPIO, flash, CAN e serial; mocks | Adaptadores STM32 e mapeamento de perifericos |
-| `services/bc_supervisor` | Parcial | Testes de perda, bloqueio e recuperacao | Semantica e temporizacao oficiais das 3 tentativas |
-| `app/cb_monitor` | Parcial | Testes de limiar, zona indeterminada, debounce e tabela configuravel | Tabela verdade oficial e periodo de amostragem |
-| `app/power_control` | Parcial | Testes de sequenciamento e perda de permissao | Estados seguros, intertravamentos, realimentacoes e tempos oficiais |
-| `services/diagnostics` | Parcial | Teste de fila circular e falha bloqueante | Catalogo, severidades, persistencia e politica de limpeza oficiais |
-| `services/persistence` | Parcial | Testes de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
+| `services/bc_supervisor` | Parcial | Testes aprovados de perda, bloqueio e recuperacao | Semantica e temporizacao oficiais das 3 tentativas |
+| `app/cb_monitor` | Parcial | Testes aprovados de limiar, zona indeterminada, debounce e tabela configuravel | Tabela verdade oficial e periodo de amostragem |
+| `app/power_control` | Parcial | Testes aprovados de sequenciamento e perda de permissao | Estados seguros, intertravamentos, realimentacoes e tempos oficiais |
+| `services/diagnostics` | Parcial | Teste aprovado de fila circular e falha bloqueante | Catalogo, severidades, persistencia e politica de limpeza oficiais |
+| `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
 | Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
-| CANopen RET | Bloqueado | Somente interface de integracao | Pilha selecionada, OD/EDS/DCF e perfil ECSS detalhado |
+| CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
 | STM32/FreeRTOS | Nao iniciado | Arquitetura preparada para adaptadores | Hardware, pinagem, CubeMX, toolchain ARM e escalonamento |
 
 `Implementado no host` nao significa qualificado para voo. A conclusao de cada
@@ -51,11 +51,12 @@ plano de desenvolvimento.
 
 | Teste | Requisitos relacionados | Estado |
 | --- | --- | --- |
-| `test_bc_supervisor_*` | REQ-ITM31 | Escrito; execucao pendente de compilador C |
-| `test_cb_monitor_*` | REQ-ITM10/37/38/39/59 | Escrito; execucao pendente de compilador C |
-| `test_power_control_*` | REQ-ITM29/31/35/36 | Escrito; execucao pendente de compilador C |
-| `test_persistence_*` | REQ-ITM6/7/14/18/20/23/24 | Escrito; execucao pendente de compilador C |
-| `test_diagnostics_*` | REQ-ITM31/39/67/68/70 | Escrito; execucao pendente de compilador C |
+| `test_bc_supervisor_*` | REQ-ITM31 | Aprovado no host |
+| `test_cb_monitor_*` | REQ-ITM10/37/38/39/59 | Aprovado no host |
+| `test_power_control_*` | REQ-ITM29/31/35/36 | Aprovado no host |
+| `test_persistence_*` | REQ-ITM6/7/14/18/20/23/24 | Aprovado no host |
+| `test_diagnostics_*` | REQ-ITM31/39/67/68/70 | Aprovado no host |
+| `test_canopen_*` | REQ-ITM16/17/18/19/21/24 | Aprovado no host |
 
 ## Evidencias Esperadas
 

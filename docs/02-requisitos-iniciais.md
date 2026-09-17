@@ -1,5 +1,12 @@
 # Requisitos Iniciais
 
+## Identificacao CANopen Confirmada
+
+O registro CiA emitido para Concert, departamento Space, define o Vendor-ID
+`0x000006A9`. Esse valor deve ser publicado em `0x1018:01` e e tratado como
+constante de produto. Product Code, regra de Revision Number e Serial Number
+continuam sujeitos as definicoes registradas em `06-questoes-abertas.md`.
+
 Esta versao foi revisada contra o documento formal `CON-ML-ET-0006A`, revisao A, de 30/06/2026, e complementada pela apresentacao `Interface Tubeira Movel-Firmware V1_0.pptx`.
 
 ## Requisitos Formais Mais Relevantes Para Firmware

@@ -47,7 +47,34 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Qual formato Skyroot usado pela CEB? Afeta `protocols/ceb` e REQ-ITM26/27;
   parser permanece bloqueado ate receber o ICD.
 - Quais objetos e mapeamentos CANopen ECSS devem compor o OD? Afeta
-  `services/canopen_ret` e REQ-ITM15-24/34/40; a interface permanece abstrata.
+  `services/canopen_ret` e REQ-ITM15-24/34/40. O OD basico foi criado, mas PDOs
+  permanecem bloqueados ate receber o ICD da RET.
+- Qual Product Code deve ser publicado em `0x1018:02`? Afeta identidade, EDS e
+  testes de integracao. O valor permanece zero no EDS e injetavel no firmware.
+- Como a revisao semantica do firmware deve ser codificada em `0x1018:03`?
+  Provisoriamente usa-se `major << 16 | minor << 8 | patch`, resultando em
+  `0x00010200` para 1.2.0.
+- Qual Node-ID de fabrica e qual objeto SDO oficial o altera? `0x2001` e
+  provisorio; o EDS usa Node-ID nao configurado (`0xFF`) e o servico exige 1..127.
+- Qual heartbeat producer time e quais consumidores devem ser configurados?
+  Afeta `0x1017`, supervisao de rede e comportamento NMT.
+- Quais telemetrias entram em TPDO/RPDO, seus tipos, escalas, COB-IDs, modos de
+  transmissao, inhibit times e event timers? Afeta REQ-ITM15/34/40.
+- A taxa de 100 Hz de REQ-ITM40 se aplica a todos os TPDOs, a um subconjunto ou
+  ao ciclo de aquisicao? Provisoriamente foi exposto periodo nominal de 10 ms em
+  objeto fabricante read-only `0x2002`, sem configurar PDO.
+- Qual versao ou commit da Lely Core deve ser qualificado? O CANopus nao fixa
+  versao e sua integracao real ainda possui placeholders.
+- Deve ser usada a Lely upstream ou a variante N7/ECSS mencionada no material
+  de referencia? Afeta conformidade ECSS, memoria e manutencao.
+- Quais opcoes da Lely serao usadas para operacao sem heap e quais limites
+  estaticos serao aprovados? Afeta RAM, determinismo e analise de pior caso.
+- Como adaptar `liblely-co` ao STM32 FDCAN, timers e FreeRTOS? O CANopus usa
+  SocketCAN/Linux, que nao e reutilizavel no microcontrolador.
+- O EDS sera a fonte de verdade e o C gerado por `dcf2c` sera versionado ou
+  gerado no build? Afeta reproducibilidade e qualificacao.
+- Quais Error Register/EMCY codes e Error Behavior devem representar falhas do
+  ITM? Afeta `0x1001`, EMCY e diagnosticos.
 - O DDS Micro XRCE e requisito confirmado ou apenas possibilidade de arquitetura?
 
 ## Dados

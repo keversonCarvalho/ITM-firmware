@@ -14,11 +14,15 @@ material de referencia.
 - Monitor de EM1/EM2 com limiares e debounce configuraveis.
 - Diagnosticos em memoria, sem alocacao dinamica.
 - Persistencia abstrata em dois slots com CRC-32 e commit transacional.
+- Servico CANopen RET com identidade CiA 301, Vendor-ID Concert Space,
+  configuracao por SDO e persistencia do Node-ID.
+- EDS inicial do ITM-100 preparado para geracao estatica pela Lely `dcf2c`.
 - Contratos abstratos para relogio, saidas, flash, CAN, UART e protocolos.
 - Testes de host e mocks de hardware.
 
-Os parsers BC/CEB/BMS e CANopen nao foram implementados porque seus ICDs ou a
-selecao da pilha ainda nao estao definidos.
+Os parsers BC/CEB/BMS e o mapeamento PDO da RET nao foram implementados porque
+seus ICDs ainda nao estao definidos. Lely Core foi selecionada para CANopen,
+mas o port STM32/FDCAN ainda depende da versao e configuracao embarcada da pilha.
 
 ## Compilar E Testar No Host
 
@@ -30,8 +34,15 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Neste computador o CMake foi encontrado, mas nenhum compilador C estava
-disponivel no terminal durante a criacao desta versao.
+Como alternativa no ambiente atual, a suite foi compilada com GCC 11.4 no WSL,
+usando `-Wall -Wextra -Wpedantic -Werror`. Os 13 testes passaram.
+
+Quando `dcf2c` da Lely estiver instalado, o CMake disponibiliza o alvo opcional
+que gera o Object Dictionary C estatico:
+
+```powershell
+cmake --build build --target itm_lely_od
+```
 
 ## Documentos De Projeto
 

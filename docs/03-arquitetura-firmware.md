@@ -118,6 +118,18 @@ Responsavel por:
 - Objetos read-only para numero de serie, versao de firmware e versao de configuracao.
 - Interface da RET em CAN 2.0A, identificador 11 bits e 500 kbit/s.
 
+Primeira implementacao:
+
+- Lely Core (`liblely-co`) selecionada, em alinhamento com o CANopus.
+- ITM atua como dispositivo/slave; CANopus atua como mestre/gateway de bancada.
+- Object Dictionary inicial em `config/canopen/itm-100.eds`.
+- Identidade `0x1018` usa Vendor-ID Concert Space `0x000006A9`.
+- Node-ID e heartbeat producer configuraveis por SDO e persistidos por `0x1010`.
+- Telemetria RET fixada em 10 ms apenas como periodo nominal derivado de 100 Hz;
+  objetos e PDOs permanecem bloqueados pelo ICD.
+- Adaptacao de CAN frames, timers e NMT da Lely para FDCAN/FreeRTOS fica restrita
+  a futura camada `platform/lely`.
+
 ### Servico DDS
 
 Responsavel por comunicacao DDS Micro XRCE, se confirmada:

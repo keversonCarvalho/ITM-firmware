@@ -27,8 +27,9 @@ Entregaveis:
 - Politica de formatacao e analise estatica.
 
 Estado: parcialmente concluida. Estrutura CMake, nucleo C11, portas e testes de
-host foram criados. Falta disponibilizar e registrar um compilador C no ambiente,
-executar os testes e adicionar analise estatica/formatacao automatizada.
+host foram criados. A suite foi compilada com GCC 11.4 no WSL com warnings como
+erro e os 13 testes passaram. Falta integrar analise estatica/formatacao
+automatizada e disponibilizar a toolchain ARM.
 
 ## Fase 2 - Modelo De Dominio Do ITM
 
