@@ -35,9 +35,11 @@ drivers/
   storage_driver
 
 platform/
-  stm32g473_hal
-  rtos_port
-  board_config
+  stm32h723/
+    include/       # mapa central da placa e interfaces STM32
+    src/           # board support, adaptadores e aplicacao de bring-up
+    linker/        # mapa de memoria do alvo
+    itm_stm32h723.ioc
 
 tests/
   unit
@@ -197,3 +199,21 @@ O desenho final deve depender dos prazos reais, prioridades, interrupcoes, DMA e
 - Separar protocolos de transporte fisico.
 - Tornar a aplicacao executavel em host para testes.
 - Versionar contratos: EDS, DCF, OD, IDL e ICDs.
+
+## Camada STM32H723
+
+O alvo embarcado e montado separadamente por `platform/stm32h723`. CMSIS e HAL
+ficam restritos a essa arvore; `include/itm` e `src/app|services` continuam C11
+portatil. O mapa de pinos e centralizado em `itm_board.h`, enquanto
+`itm_stm32_ports.c` traduz relogio, secao critica e GPIO para os contratos do
+nucleo. ADC, FDCAN, UART e flash existem inicialmente como adaptadores que
+retornam `ITM_ERROR_NOT_READY`.
+
+O startup, o arquivo de sistema CMSIS e os drivers HAL sao consumidos do pacote
+oficial STM32CubeH7 V1.13.0 instalado fora do repositorio. O codigo manual nao e
+gerado pelo CubeMX. O `.ioc` registra dispositivo, cristal e associacoes de
+pinos, sem fixar baud rates ou temporizacoes ainda nao aprovadas.
+
+No primeiro bring-up, o HSE de 8 MHz alimenta diretamente SYSCLK, sem PLL. A
+RAM usada pelo linker fica limitada aos 128 KiB de DTCM; demais bancos, cache,
+MPU e DMA permanecem fora do escopo ate existir uma politica de coerencia.

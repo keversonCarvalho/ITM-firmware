@@ -21,10 +21,18 @@ material de referencia.
   consistentes, normalizacao inteira e ring buffers de capacidade fixa.
 - Contratos abstratos para relogio, saidas, flash, CAN, UART e protocolos.
 - Testes de host e mocks de hardware.
+- Alvo bare-metal STM32H723VGT6 com clock inicial de 8 MHz, GPIOs seguros,
+  adaptadores basicos e artefatos ELF/BIN/HEX.
 
 Os parsers BC/CEB/BMS e o mapeamento PDO da RET nao foram implementados porque
 seus ICDs ainda nao estao definidos. Lely Core foi selecionada para CANopen,
 mas o port STM32/FDCAN ainda depende da versao e configuracao embarcada da pilha.
+
+## Compilar Para O STM32H723
+
+Consulte [Bring-up STM32H723](docs/09-bringup-stm32h723.md) para instalar as
+ferramentas, compilar com CMake/Ninja, verificar a pinagem e gravar pela porta
+SWD. A compilacao nao e evidência de funcionamento eletrico na placa.
 
 ## Compilar E Testar No Host
 
@@ -55,6 +63,7 @@ cmake --build build --target itm_lely_od
 - [Questoes abertas](docs/06-questoes-abertas.md)
 - [Matriz de rastreabilidade inicial](docs/07-matriz-rastreabilidade-inicial.md)
 - [Mapa de hardware Rev00](docs/08-mapa-hardware-rev00.md)
+- [Bring-up STM32H723](docs/09-bringup-stm32h723.md)
 - [Decisoes de arquitetura](docs/decisions/)
 
 ## Referencias Locais

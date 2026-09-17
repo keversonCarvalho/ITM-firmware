@@ -13,8 +13,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 
 ## Hardware
 
-- Microcontrolador confirmado: STM32H723VGT6, encapsulamento LQFP100. Ainda
-  depende da aprovacao do esquematico Rev00 para congelar a pinagem.
+- Microcontrolador confirmado: STM32H723VGT6, encapsulamento LQFP100. A pinagem
+  Rev00 foi revisada contra o datasheet e o CubeMX, mas ainda requer validacao
+  eletrica na placa e aprovacao formal para ser congelada.
 - O esquema Rev00 define FDCAN1-3, UART4/5/7, ADC1 e GPIOs. Faltam canais DMA,
   prioridades de interrupcao, timers e watchdog.
 - Quais regioes de memoria receberao stacks, buffers DMA, Object Dictionary e
@@ -28,6 +29,14 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Qual sinal confirma `ceb_power_good`? Afeta `app/power_control` e
   REQ-ITM29/35/36. A decisao provisoria e manter a confirmacao como entrada
   abstrata obrigatoria para completar a energizacao.
+- A placa usa definitivamente a alimentacao interna `PWR_LDO_SUPPLY`? Afeta a
+  inicializacao de clock em `platform/stm32h723/src/main.c`. A configuracao e
+  provisoria e deve ser confirmada contra BOM/layout antes do bring-up.
+- Qual e a polaridade logica aprovada de `FAULT1`, `FAULT2`, `MFET1`, `MFET2` e
+  `CAN1_TERM`? O port expoe FAULT como nivel eletrico bruto e mantem as saidas
+  em nivel baixo no boot; nenhuma semantica operacional foi associada ainda.
+- Quais bancos SRAM serao usados alem do DTCM? O linker inicial usa somente
+  128 KiB de DTCM. Isso afeta buffers, stacks e futura operacao com DMA/cache.
 
 ## Tempo Real
 
@@ -45,6 +54,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   ISR e medir o pior tempo de bloqueio do snapshot.
 - Qual e o limite aprovado para duracao da secao critica e quantos sinais podem
   ser copiados por snapshot sem afetar FDCAN/UART?
+- O clock de producao, divisores e fonte dos clocks de perifericos ainda devem
+  ser definidos. O bring-up usa HSE direto a 8 MHz, sem PLL, como escolha
+  conservadora e nao como configuracao final.
 
 ## Protocolos
 
@@ -55,6 +67,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   `DE` controlado pelo MCU.
 - Quais IDs CAN dos BMS 28 V e 150 V?
 - Qual baud rate das redes CAN dos BMS?
+- Quais baud rates, sample points, modos FDCAN e temporizacoes UART devem ser
+  aplicados no `.ioc`? O CubeMX sugere defaults ao normalizar o arquivo, mas
+  eles foram deliberadamente excluidos por nao constituirem requisitos.
 - Qual Node-ID do ITM?
 - Quais campos, enquadramento, CRC, ACK/NACK e contador de sequencia compoem o
   protocolo BC? Afeta `protocols/bc` e REQ-ITM28/29/30/31; parser permanece
@@ -131,6 +146,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 ## Build E Release
 
 - Toolchain preferida: CMake + Ninja + arm-none-eabi-gcc, usando o STM32CubeMX apenas para gerar/configurar os arquivos iniciais do STM32.
+- Versoes iniciais validadas: Arm GNU Toolchain 12.2.1, Ninja 1.13.2,
+  STM32CubeH7 V1.13.0 e STM32CubeMX 6.18.0-RC3. Definir e qualificar as versoes
+  oficiais de producao, especialmente substituir a versao RC do CubeMX.
 - RTOS preferido: FreeRTOS
 - Bootloader: implementacao futura; nao previsto nesta fase, com gravacao direta por ferramenta de desenvolvimento.
 - Assinatura/verificacao de imagem: implementacao futura; nao prevista nesta fase.
