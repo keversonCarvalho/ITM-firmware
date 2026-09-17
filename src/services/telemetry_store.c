@@ -7,7 +7,7 @@
 
 static bool valid_id(itm_signal_id_t id)
 {
-    return ((int)id >= 0) && (id < ITM_SIGNAL_COUNT);
+    return id < ITM_SIGNAL_COUNT;
 }
 
 static bool timestamp_before(uint32_t candidate, uint32_t reference)
