@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(itm_firmware VERSION 0.1.0 LANGUAGES C)
 
 option(ITM_BUILD_TESTS "Build host tests" ON)
+option(ITM_BUILD_STM32H723 "Build the STM32H723VGT6 target" OFF)
 
 find_program(ITM_DCF2C_EXECUTABLE NAMES dcf2c)
 
@@ -50,4 +51,8 @@ endif()
 if(ITM_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(ITM_BUILD_STM32H723)
+    add_subdirectory(platform/stm32h723)
 endif()
