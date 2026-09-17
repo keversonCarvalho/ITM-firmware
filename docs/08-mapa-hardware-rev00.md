@@ -38,10 +38,10 @@ temporizacoes e comportamento funcional nao sao inferidos do esquema.
 | CEB CMD driver enable | GPIO output | PA10 | `UART5_DE` |
 | Banco de Controle TX | UART7 TX | PE8 | `UART7_TX` |
 | Banco de Controle RX | UART7 RX | PE7 | `UART7_RX` |
-| Entrada analogica E_ALIM + | ADC1 channel 18 differential + | PA4 | `ADC1_INP3` |
-| Entrada analogica E_ALIM - | ADC1 channel 18 differential - | PA5 | `ADC1_INN3` |
-| Entrada analogica S_ALIM + | ADC1 channel 3 differential + | PA6 | `ADC1_INP4` |
-| Entrada analogica S_ALIM - | ADC1 channel 3 differential - | PA7 | `ADC1_INN4` |
+| Entrada analogica E_ALIM + | ADC1 channel 3 differential + | PA6 | `ADC1_INP3` |
+| Entrada analogica E_ALIM - | ADC1 channel 3 differential - | PA7 | `ADC1_INN3` |
+| Entrada analogica S_ALIM + | ADC1 channel 4 differential + | PC4 | `ADC1_INP4` |
+| Entrada analogica S_ALIM - | ADC1 channel 4 differential - | PC5 | `ADC1_INN4` |
 | Acionamento de potencia 1 | GPIO output | PE2 | `MFET1` |
 | Acionamento de potencia 2 | GPIO output | PE3 | `MFET2` |
 | Diagnostico de potencia 1 | GPIO input | PC13 | `FAULT1` |
@@ -95,20 +95,6 @@ temporizacoes e comportamento funcional nao sao inferidos do esquema.
 
 ## Achados Para Revisao
 
-### Nomes Das Nets ADC
-
-Os nomes das nets analogicas nao correspondem aos numeros de canal do
-STM32H723VGT6:
-
-- PA4/PA5 formam o par diferencial ADC1 canal 18, mas o esquema os chama de
-  `ADC1_INP3` e `ADC1_INN3`.
-- PA6/PA7 formam o par diferencial ADC1 canal 3, mas o esquema os chama de
-  `ADC1_INP4` e `ADC1_INN4`.
-
-O hardware pode estar eletricamente correto, mas esses nomes apresentam risco
-de configuracao incorreta no CubeMX e no firmware. Recomenda-se corrigir as nets
-na proxima revisao ou manter uma nota formal de equivalencia.
-
 ### Correspondencia Com O Diagrama Funcional
 
 O esquema detalhado deve prevalecer sobre o diagrama funcional anterior:
@@ -131,5 +117,4 @@ pois o esquema eletrico nao define o conteudo dos protocolos.
   `UART5_DE` e `CAN1_TERM`.
 - Confirmar associacao de `BOB_CONT_+` com o Contactor Box e a finalidade de
   E_ALIM/S_ALIM na tabela verdade de monitoramento.
-- Resolver ou aceitar formalmente a divergencia dos nomes de canal ADC.
 - Revisar as erratas do STM32H723 e dos componentes isoladores aplicaveis.

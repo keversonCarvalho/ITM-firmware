@@ -19,9 +19,6 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   prioridades de interrupcao, timers e watchdog.
 - Quais regioes de memoria receberao stacks, buffers DMA, Object Dictionary e
   telemetria, e qual sera a politica de MPU/cache do Cortex-M7?
-- Os nomes das nets ADC serao corrigidos? No esquema Rev00, PA4/PA5 estao
-  nomeados como canal 3, mas correspondem ao par diferencial ADC1 canal 18;
-  PA6/PA7 estao nomeados como canal 4, mas correspondem ao canal 3.
 - Quais saidas fisicas comandam a alimentacao da CEB e do CB?
 - Confirmar a nomenclatura funcional das saidas `BOB_CONT_+` e `+28V_CEB`,
   comandadas por `MFET1` e `MFET2`, antes de associa-las definitivamente aos
