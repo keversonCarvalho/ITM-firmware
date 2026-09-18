@@ -4,6 +4,26 @@ project(itm_firmware VERSION 0.1.0 LANGUAGES C)
 
 option(ITM_BUILD_TESTS "Build host tests" ON)
 option(ITM_BUILD_STM32H723 "Build the STM32H723VGT6 target" OFF)
+set(ITM_HARDWARE "HOST" CACHE STRING
+    "Hardware target: HOST, ITM_REV00, or STM32H735G_DK")
+set_property(CACHE ITM_HARDWARE PROPERTY STRINGS
+    HOST ITM_REV00 STM32H735G_DK)
+
+if(ITM_BUILD_STM32H723)
+    if(NOT ITM_HARDWARE STREQUAL "HOST")
+        message(FATAL_ERROR
+            "Use either ITM_HARDWARE or legacy ITM_BUILD_STM32H723, not both")
+    endif()
+    set(ITM_HARDWARE "ITM_REV00")
+    message(DEPRECATION
+        "ITM_BUILD_STM32H723 is deprecated; use ITM_HARDWARE=ITM_REV00")
+endif()
+
+set(_itm_hardware_values HOST ITM_REV00 STM32H735G_DK)
+if(NOT ITM_HARDWARE IN_LIST _itm_hardware_values)
+    message(FATAL_ERROR
+        "Invalid ITM_HARDWARE='${ITM_HARDWARE}'. Expected: ${_itm_hardware_values}")
+endif()
 
 find_program(ITM_DCF2C_EXECUTABLE NAMES dcf2c)
 
@@ -53,6 +73,8 @@ if(ITM_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(ITM_BUILD_STM32H723)
+if(ITM_HARDWARE STREQUAL "ITM_REV00")
     add_subdirectory(platform/stm32h723)
+elseif(ITM_HARDWARE STREQUAL "STM32H735G_DK")
+    add_subdirectory(platform/stm32h735g_dk)
 endif()
