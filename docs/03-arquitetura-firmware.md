@@ -113,6 +113,16 @@ Responsavel por:
 - Diagnosticos de comunicacao e validade dos dados.
 - Suporte a CAN basico ou CANopen, conforme especificacao dos fornecedores das baterias.
 
+Primeira implementacao DBCC:
+
+- `Battery.dbc` e a fonte de verdade versionada das mensagens de bateria.
+- `cantools` roda somente no host e gera codec C estatico versionado.
+- `itm_dbcc` valida barramento, ID estendido e DLC, rejeita representacoes
+  numericas invalidas e converte para inteiros escalados.
+- `Batt_28V` e `Batt_150V` permanecem origens distintas mesmo usando os mesmos
+  CAN IDs.
+- A ligacao ao FDCAN permanece pendente de bitrate, filtros e temporizacoes.
+
 ### Servico CANopen
 
 Responsavel por:

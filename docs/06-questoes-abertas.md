@@ -148,6 +148,28 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   Afeta `services/bc_supervisor` e `app/power_control`. Provisoriamente, o link
   pode voltar a conectado, mas a falha de potencia exige limpeza explicita.
 
+## DBCC E Baterias
+
+- Confirmar se `chargerVoltage` e realmente inteiro assinado de 32 bits. O DBC
+  marca `packVoltage` como IEEE-754, mas nao marca `chargerVoltage`; afeta
+  `itm_dbcc` e REQ-ITM25. Provisoriamente, o codec respeita literalmente o DBC.
+- Confirmar as faixas fisicas. Muitos sinais usam `[0|1]` apesar de unidades V,
+  A, C e %, e `NoOfCells` aparece limitado a 1; afeta validacao, diagnostico e
+  catalogo. Provisoriamente, esses limites nao sao usados como limites fisicos.
+- Confirmar a escala de SOC/SOH. SOC usa `0.392156862745098` e faixa `[0|1]`,
+  enquanto SOH usa `0.3922` e `[0|100]`; afeta telemetria e CANopen.
+- Confirmar se temperaturas e correntes podem ser negativas. Alguns sinais sao
+  unsigned ou possuem limites incompativeis; afeta conversao e alarmes.
+- Fornecer bitrate, sample point, filtros, periodos/timeout e politica de bus-off
+  para `Batt_28V` e `Batt_150V`; afeta drivers FDCAN e stale.
+- Fornecer vetores CAN oficiais ou capturas das baterias para validacao cruzada.
+- Confirmar transmissores/receptores: varios sinais apontam para o mesmo
+  `Master_LV_Board` que transmite a mensagem, e outros para `Vector__XXX`.
+- Definir quais sinais, alem de tensao total e SOC, entram no catalogo estatico
+  e quais faixas e timeouts devem ser aplicados.
+- Qualificar ou aprovar formalmente `cantools` 41.0.2 para o processo de
+  desenvolvimento. Ate la, codigo gerado exige revisao e testes independentes.
+
 ## Build E Release
 
 - Toolchain preferida: CMake + Ninja + arm-none-eabi-gcc, usando o STM32CubeMX apenas para gerar/configurar os arquivos iniciais do STM32.

@@ -11,6 +11,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `services/persistence` | REQ-ITM 6, 7, 14, 18, 20, 23, 24 | Gravacao independente, power-fail simulado, CRC de parametros, restauracao no boot, incremento de versao. |
 | `services/canopen_ret` | REQ-ITM 15, 16, 17, 18, 19, 21, 24, 34, 40 | SDO read/write, persistencia, Node-ID, OD read-only, PDO/telemetria, heartbeat, taxa 500 kbit/s. |
 | `services/bms` | REQ-ITM 25 | Recepcao CAN valida, timeout, stale data, escala de sinais, falha de BMS e recuperacao. |
+| `protocols/itm_dbcc` | REQ-ITM 15, 25, 40 | Todos os IDs/DLCs, ID estendido, IEEE-754 invalido, vetores independentes, isolamento das baterias, timestamp e estatisticas. |
 | `services/ceb` | REQ-ITM 26, 27 | Parser RS-485, telemetria CEB, comandos Skyroot, erros de CRC, timeouts e comandos nao permitidos. |
 | `services/bc` | REQ-ITM 28, 29, 30, 31 | Parser RS-422, comandos de SSR, comandos de teste, perda de comunicacao, 3 tentativas e desligamento seguro. |
 | `app/power_control` | REQ-ITM 8, 9, 29, 31, 35, 36 | Sequenciamento CEB/CB, falhas de SSR, desligamento em falha, intertravamentos e eventos. |
@@ -31,7 +32,8 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `app/power_control` | Parcial | Testes aprovados de sequenciamento e perda de permissao | Estados seguros, intertravamentos, realimentacoes e tempos oficiais |
 | `services/diagnostics` | Parcial | Teste aprovado de fila circular e falha bloqueante | Catalogo, severidades, persistencia e politica de limpeza oficiais |
 | `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
-| Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
+| Protocolo BMS/DBCC | Parcial | DBC auditado, codec C gerado, wrapper portatil e testes de host | Validar ambiguidades do DBC, bitrate, filtros, periodos e vetores oficiais |
+| Protocolos BC/CEB | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
 | CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, Node-ID inicial 10, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, heartbeat, PDOs e perfil ECSS detalhado |
 | Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
 | STM32H723VGT6 | Parcial | `.ioc`, startup/linker/CMSIS/HAL oficiais, build ARM, clock HSE 8 MHz, GPIO seguro e bring-up minimo | Ensaio na placa, polaridades, MPU/cache, watchdog, perifericos, DMA/IRQ e mapa final de memoria |
@@ -64,6 +66,7 @@ plano de desenvolvimento.
 | `test_diagnostics_*` | REQ-ITM31/39/67/68/70 | Aprovado no host |
 | `test_canopen_*` | REQ-ITM16/17/18/19/21/24 | Aprovado no host |
 | `test_telemetry_*` | REQ-ITM13/15/25/26/40 | 10 testes aprovados no host, incluindo memoria e overflow |
+| `test_dbcc_*` | REQ-ITM15/25/40 | Codec gerado, oito mensagens, vetores fixos, erros, origens, timestamps e contadores aprovados no host |
 
 ## Evidencias Esperadas
 

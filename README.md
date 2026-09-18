@@ -19,14 +19,30 @@ material de referencia.
 - EDS inicial do ITM-100 preparado para geracao estatica pela Lely `dcf2c`.
 - Registro estatico de telemetria com catalogo, qualidade, freshness, snapshots
   consistentes, normalizacao inteira e ring buffers de capacidade fixa.
+- DBCC de baterias gerado do `Battery.dbc` com `cantools`, wrapper portatil,
+  separacao entre as redes de 28 V e 150 V e testes de host.
 - Contratos abstratos para relogio, saidas, flash, CAN, UART e protocolos.
 - Testes de host e mocks de hardware.
 - Alvo bare-metal STM32H723VGT6 com clock inicial de 8 MHz, GPIOs seguros,
   adaptadores basicos e artefatos ELF/BIN/HEX.
 
-Os parsers BC/CEB/BMS e o mapeamento PDO da RET nao foram implementados porque
-seus ICDs ainda nao estao definidos. Lely Core foi selecionada para CANopen,
+Os parsers BC/CEB e o mapeamento PDO da RET nao foram implementados porque seus
+ICDs ainda nao estao definidos. O DBCC BMS esta parcial e ainda depende da
+validacao das ambiguidades do DBC e dos parametros fisicos da CAN. Lely Core foi selecionada para CANopen,
 mas o port STM32/FDCAN ainda depende da versao e configuracao embarcada da pilha.
+
+## DBCC Das Baterias
+
+O build consome código C versionado em `generated/can`; Python nao faz parte do
+firmware. Para instalar o gerador fixado, regenerar e verificar os artefatos:
+
+```sh
+python -m pip install -r tools/requirements-dbc.txt
+python tools/generate_battery_dbc.py --write
+python tools/generate_battery_dbc.py --check
+```
+
+Detalhes e lacunas estao em `docs/11-dbcc-baterias.md`.
 
 ## Compilar Para O STM32H723
 

@@ -1,5 +1,6 @@
 add_executable(itm_tests
     test_main.c
+    test_battery_dbc.c
     test_bc_supervisor.c
     test_cb_monitor.c
     test_canopen_ret.c

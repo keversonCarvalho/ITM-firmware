@@ -1,6 +1,12 @@
 #include "test_framework.h"
 
 bool test_bc_supervisor_trips_after_configured_attempts(void);
+bool test_dbcc_decodes_independent_vectors(void);
+bool test_dbcc_covers_all_dbc_messages(void);
+bool test_dbcc_generated_pack_unpack_roundtrip(void);
+bool test_dbcc_rejects_bad_frames_and_float_values(void);
+bool test_dbcc_ingest_isolates_buses_and_timestamps(void);
+bool test_dbcc_statistics_and_counter_wrap(void);
 bool test_bc_supervisor_recovers_on_valid_frame(void);
 bool test_cb_monitor_debounces_and_matches_expected_state(void);
 bool test_cb_monitor_reports_indeterminate_voltage(void);
@@ -36,6 +42,18 @@ int itm_run_test(const char *name, itm_test_fn_t function)
 int main(void)
 {
     int failures = 0;
+    failures += itm_run_test("DBCC independent vectors",
+                             test_dbcc_decodes_independent_vectors);
+    failures += itm_run_test("DBCC all DBC messages",
+                             test_dbcc_covers_all_dbc_messages);
+    failures += itm_run_test("DBCC generated roundtrip",
+                             test_dbcc_generated_pack_unpack_roundtrip);
+    failures += itm_run_test("DBCC invalid frames and floats",
+                             test_dbcc_rejects_bad_frames_and_float_values);
+    failures += itm_run_test("DBCC bus and timestamp isolation",
+                             test_dbcc_ingest_isolates_buses_and_timestamps);
+    failures += itm_run_test("DBCC statistics wrap",
+                             test_dbcc_statistics_and_counter_wrap);
     failures += itm_run_test("BC trips after attempts",
                              test_bc_supervisor_trips_after_configured_attempts);
     failures += itm_run_test("BC recovers on valid frame",
