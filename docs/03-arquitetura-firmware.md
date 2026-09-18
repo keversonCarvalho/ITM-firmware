@@ -131,7 +131,8 @@ Primeira implementacao:
 - ITM atua como dispositivo/slave; CANopus atua como mestre/gateway de bancada.
 - Object Dictionary inicial em `config/canopen/itm-100.eds`.
 - Identidade `0x1018` usa Vendor-ID Concert Space `0x000006A9`.
-- Node-ID e heartbeat producer configuraveis por SDO e persistidos por `0x1010`.
+- Node-ID inicial 10; Node-ID e heartbeat producer configuraveis por SDO e
+  persistidos por `0x1010`.
 - Telemetria RET fixada em 10 ms apenas como periodo nominal derivado de 100 Hz;
   objetos e PDOs permanecem bloqueados pelo ICD.
 - Adaptacao de CAN frames, timers e NMT da Lely para FDCAN/FreeRTOS fica restrita

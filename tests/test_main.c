@@ -5,6 +5,7 @@ bool test_bc_supervisor_recovers_on_valid_frame(void);
 bool test_cb_monitor_debounces_and_matches_expected_state(void);
 bool test_cb_monitor_reports_indeterminate_voltage(void);
 bool test_canopen_identity_uses_registered_vendor_id(void);
+bool test_canopen_uses_itm_default_node_id(void);
 bool test_canopen_rejects_identity_write(void);
 bool test_canopen_persists_node_id_on_save_command(void);
 bool test_canopen_validates_node_id_range(void);
@@ -45,6 +46,8 @@ int main(void)
                              test_cb_monitor_reports_indeterminate_voltage);
     failures += itm_run_test("CANopen registered vendor identity",
                              test_canopen_identity_uses_registered_vendor_id);
+    failures += itm_run_test("CANopen ITM default node-ID",
+                             test_canopen_uses_itm_default_node_id);
     failures += itm_run_test("CANopen identity is read-only",
                              test_canopen_rejects_identity_write);
     failures += itm_run_test("CANopen persistent node-ID",

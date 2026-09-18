@@ -36,7 +36,7 @@ NrOfTXPDO=0
 LSS_Supported=0
 
 [DeviceCommissioning]
-NodeID=0xFF
+NodeID=0x0A
 Baudrate=500
 
 [MandatoryObjects]
@@ -179,7 +179,7 @@ DataType=0x0005
 AccessType=rw
 LowLimit=1
 HighLimit=127
-DefaultValue=1
+DefaultValue=10
 PDOMapping=0
 
 [2002]

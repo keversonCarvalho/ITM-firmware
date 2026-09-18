@@ -32,7 +32,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `services/diagnostics` | Parcial | Teste aprovado de fila circular e falha bloqueante | Catalogo, severidades, persistencia e politica de limpeza oficiais |
 | `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
 | Protocolos BC/CEB/BMS | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
-| CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
+| CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, Node-ID inicial 10, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, heartbeat, PDOs e perfil ECSS detalhado |
 | Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
 | STM32H723VGT6 | Parcial | `.ioc`, startup/linker/CMSIS/HAL oficiais, build ARM, clock HSE 8 MHz, GPIO seguro e bring-up minimo | Ensaio na placa, polaridades, MPU/cache, watchdog, perifericos, DMA/IRQ e mapa final de memoria |
 | STM32H735G-DK | Parcial | Alvo separado, HSE 25 MHz, LEDs, botao, VCP USART3, FDCAN1 loopback e build ARM | Gravar na DK e registrar evidencias fisicas de LED, botao, VCP e loopback |

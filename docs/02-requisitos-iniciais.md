@@ -7,6 +7,9 @@ O registro CiA emitido para Concert, departamento Space, define o Vendor-ID
 constante de produto. Product Code, regra de Revision Number e Serial Number
 continuam sujeitos as definicoes registradas em `06-questoes-abertas.md`.
 
+O Node-ID inicial confirmado do ITM na rede CANopen da RET e `10`. Ele continua
+configuravel por SDO e persistente, conforme REQ-ITM17 e REQ-ITM18.
+
 Esta versao foi revisada contra o documento formal `CON-ML-ET-0006A`, revisao A, de 30/06/2026, e complementada pela apresentacao `Interface Tubeira Movel-Firmware V1_0.pptx`.
 
 ## Requisitos Formais Mais Relevantes Para Firmware

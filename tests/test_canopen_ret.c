@@ -5,13 +5,19 @@
 
 #include <string.h>
 
+_Static_assert(ITM_CANOPEN_DEFAULT_NODE_ID >= 1U,
+               "CANopen node-ID must be in 1..127");
+_Static_assert(ITM_CANOPEN_DEFAULT_NODE_ID <= 127U,
+               "CANopen node-ID must be in 1..127");
+
 static itm_canopen_ret_t create_service(mock_flash_t *flash,
                                         itm_persistence_t *persistence)
 {
     itm_canopen_ret_t service;
     const itm_canopen_identity_t identity = {
         0x12345678UL, itm_canopen_pack_revision(1U, 2U, 0U), 0xABCDEF01UL};
-    const itm_canopen_persistent_config_t defaults = {7U, 1000U, 0U};
+    const itm_canopen_persistent_config_t defaults = {
+        ITM_CANOPEN_DEFAULT_NODE_ID, 1000U, 0U};
 
     mock_flash_init(flash);
     (void)itm_persistence_init(persistence, mock_flash_port(flash), 1U);
@@ -36,6 +42,17 @@ bool test_canopen_identity_uses_registered_vendor_id(void)
     return true;
 }
 
+bool test_canopen_uses_itm_default_node_id(void)
+{
+    mock_flash_t flash;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+
+    TEST_ASSERT_EQ(10U, ITM_CANOPEN_DEFAULT_NODE_ID);
+    TEST_ASSERT_EQ(ITM_CANOPEN_DEFAULT_NODE_ID, service.config.node_id);
+    return true;
+}
+
 bool test_canopen_rejects_identity_write(void)
 {
     mock_flash_t flash;
@@ -57,7 +74,8 @@ bool test_canopen_persists_node_id_on_save_command(void)
     itm_canopen_ret_t service = create_service(&flash, &persistence);
     itm_canopen_ret_t restored;
     const itm_canopen_identity_t identity = {0U, 0U, 0U};
-    const itm_canopen_persistent_config_t defaults = {1U, 0U, 0U};
+    const itm_canopen_persistent_config_t defaults = {
+        ITM_CANOPEN_DEFAULT_NODE_ID, 0U, 0U};
     const uint8_t node_id = 42U;
     const uint32_t save = 0x65766173UL;
 

@@ -76,7 +76,6 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Quais baud rates, sample points, modos FDCAN e temporizacoes UART devem ser
   aplicados no `.ioc`? O CubeMX sugere defaults ao normalizar o arquivo, mas
   eles foram deliberadamente excluidos por nao constituirem requisitos.
-- Qual Node-ID do ITM?
 - Quais campos, enquadramento, CRC, ACK/NACK e contador de sequencia compoem o
   protocolo BC? Afeta `protocols/bc` e REQ-ITM28/29/30/31; parser permanece
   bloqueado ate receber o ICD.
@@ -90,8 +89,8 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Como a revisao semantica do firmware deve ser codificada em `0x1018:03`?
   Provisoriamente usa-se `major << 16 | minor << 8 | patch`, resultando em
   `0x00010200` para 1.2.0.
-- Qual Node-ID de fabrica e qual objeto SDO oficial o altera? `0x2001` e
-  provisorio; o EDS usa Node-ID nao configurado (`0xFF`) e o servico exige 1..127.
+- Node-ID inicial confirmado: 10. Ainda falta confirmar qual objeto SDO oficial
+  o altera; `0x2001` permanece provisorio e o servico aceita a faixa 1..127.
 - Qual heartbeat producer time e quais consumidores devem ser configurados?
   Afeta `0x1017`, supervisao de rede e comportamento NMT.
 - Quais telemetrias entram em TPDO/RPDO, seus tipos, escalas, COB-IDs, modos de
