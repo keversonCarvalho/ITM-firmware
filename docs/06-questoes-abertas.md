@@ -37,6 +37,12 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   em nivel baixo no boot; nenhuma semantica operacional foi associada ainda.
 - Quais bancos SRAM serao usados alem do DTCM? O linker inicial usa somente
   128 KiB de DTCM. Isso afeta buffers, stacks e futura operacao com DMA/cache.
+- Na STM32H735G-DK, o smoke test usa HSE direto a 25 MHz, USART3 a 115200 8N1 e
+  FDCAN1 em loopback interno a 250 kbit/s. Esses valores sao exclusivos de
+  bancada e nao resolvem nenhuma temporizacao do ITM.
+- O FDCAN interno da DK deve ser seguido por teste com o transceptor e conector
+  CAN da placa? Isso afeta a evidencia de camada fisica, mas nao deve bloquear o
+  primeiro smoke test.
 
 ## Tempo Real
 
@@ -149,6 +155,8 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Versoes iniciais validadas: Arm GNU Toolchain 12.2.1, Ninja 1.13.2,
   STM32CubeH7 V1.13.0 e STM32CubeMX 6.18.0-RC3. Definir e qualificar as versoes
   oficiais de producao, especialmente substituir a versao RC do CubeMX.
+- A opcao legada `ITM_BUILD_STM32H723` sera removida quando scripts externos
+  migrarem para `ITM_HARDWARE=ITM_REV00`.
 - RTOS preferido: FreeRTOS
 - Bootloader: implementacao futura; nao previsto nesta fase, com gravacao direta por ferramenta de desenvolvimento.
 - Assinatura/verificacao de imagem: implementacao futura; nao prevista nesta fase.

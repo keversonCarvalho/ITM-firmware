@@ -7,6 +7,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | Modulo | Requisitos de entrada | Testes minimos |
 | --- | --- | --- |
 | `platform/stm32h723` | REQ-ITM 4, 5, 11, 12, 13 | Build alvo, mapa de perifericos, estados seguros no boot, teste de clock/GPIO/UART/CAN e prova de capacidade. |
+| `platform/stm32h735g_dk` | Apoio a REQ-ITM 4, 5, 12, 13 | Build alvo, clock, LED/botao, VCP, FDCAN loopback e teste fisico na DK; nao substitui verificacao no ITM. |
 | `services/persistence` | REQ-ITM 6, 7, 14, 18, 20, 23, 24 | Gravacao independente, power-fail simulado, CRC de parametros, restauracao no boot, incremento de versao. |
 | `services/canopen_ret` | REQ-ITM 15, 16, 17, 18, 19, 21, 24, 34, 40 | SDO read/write, persistencia, Node-ID, OD read-only, PDO/telemetria, heartbeat, taxa 500 kbit/s. |
 | `services/bms` | REQ-ITM 25 | Recepcao CAN valida, timeout, stale data, escala de sinais, falha de BMS e recuperacao. |
@@ -34,6 +35,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, Node-ID, heartbeat, PDOs e perfil ECSS detalhado |
 | Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
 | STM32H723VGT6 | Parcial | `.ioc`, startup/linker/CMSIS/HAL oficiais, build ARM, clock HSE 8 MHz, GPIO seguro e bring-up minimo | Ensaio na placa, polaridades, MPU/cache, watchdog, perifericos, DMA/IRQ e mapa final de memoria |
+| STM32H735G-DK | Parcial | Alvo separado, HSE 25 MHz, LEDs, botao, VCP USART3, FDCAN1 loopback e build ARM | Gravar na DK e registrar evidencias fisicas de LED, botao, VCP e loopback |
 
 `Implementado no host` nao significa qualificado para voo. A conclusao de cada
 requisito depende das evidencias de integracao, HIL e qualificacao previstas no

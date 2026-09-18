@@ -24,7 +24,7 @@ Defina `STM32_CUBE_H7_PATH` quando o pacote nao estiver no diretorio padrao
 ```powershell
 cmake -S . -B build-stm32h723 -G Ninja `
   -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-none-eabi-gcc.cmake `
-  -DITM_BUILD_STM32H723=ON -DITM_BUILD_TESTS=OFF `
+  -DITM_HARDWARE=ITM_REV00 -DITM_BUILD_TESTS=OFF `
   -DCMAKE_BUILD_TYPE=Release
 cmake --build build-stm32h723
 ```

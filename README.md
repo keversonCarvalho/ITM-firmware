@@ -34,6 +34,29 @@ Consulte [Bring-up STM32H723](docs/09-bringup-stm32h723.md) para instalar as
 ferramentas, compilar com CMake/Ninja, verificar a pinagem e gravar pela porta
 SWD. A compilacao nao e evidência de funcionamento eletrico na placa.
 
+## Selecionar O Hardware
+
+O cache CMake `ITM_HARDWARE` seleciona exatamente uma plataforma:
+
+| Valor | Uso |
+| --- | --- |
+| `HOST` | Nucleo portatil e testes no computador; valor padrao |
+| `ITM_REV00` | Placa final ITM-100 com STM32H723VGT6 |
+| `STM32H735G_DK` | Development kit para integracao antecipada |
+
+Exemplo para a development kit:
+
+```powershell
+cmake -S . -B build-stm32h735g-dk -G Ninja `
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-none-eabi-gcc.cmake `
+  -DITM_HARDWARE=STM32H735G_DK -DITM_BUILD_TESTS=OFF `
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build-stm32h735g-dk
+```
+
+Use um diretorio de build diferente para cada hardware. Consulte
+[Bring-up STM32H735G-DK](docs/10-bringup-stm32h735g-dk.md).
+
 ## Compilar E Testar No Host
 
 Pre-requisitos: CMake 3.20 ou superior e um compilador C11 (GCC, Clang ou MSVC).
@@ -64,6 +87,7 @@ cmake --build build --target itm_lely_od
 - [Matriz de rastreabilidade inicial](docs/07-matriz-rastreabilidade-inicial.md)
 - [Mapa de hardware Rev00](docs/08-mapa-hardware-rev00.md)
 - [Bring-up STM32H723](docs/09-bringup-stm32h723.md)
+- [Bring-up STM32H735G-DK](docs/10-bringup-stm32h735g-dk.md)
 - [Decisoes de arquitetura](docs/decisions/)
 
 ## Referencias Locais

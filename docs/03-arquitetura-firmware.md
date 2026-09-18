@@ -40,6 +40,11 @@ platform/
     src/           # board support, adaptadores e aplicacao de bring-up
     linker/        # mapa de memoria do alvo
     itm_stm32h723.ioc
+  stm32h735g_dk/
+    include/       # definicoes exclusivas da development kit
+    src/           # smoke test, VCP, FDCAN loopback e adaptadores
+    linker/        # mapa STM32H735IGK6
+    stm32h735g_dk.ioc
 
 tests/
   unit
@@ -217,3 +222,15 @@ pinos, sem fixar baud rates ou temporizacoes ainda nao aprovadas.
 No primeiro bring-up, o HSE de 8 MHz alimenta diretamente SYSCLK, sem PLL. A
 RAM usada pelo linker fica limitada aos 128 KiB de DTCM; demais bancos, cache,
 MPU e DMA permanecem fora do escopo ate existir uma politica de coerencia.
+
+### Selecao De Hardware
+
+`ITM_HARDWARE` e a unica selecao recomendada de plataforma no CMake. `HOST` nao
+adiciona codigo de fabricante; `ITM_REV00` seleciona `platform/stm32h723`; e
+`STM32H735G_DK` seleciona `platform/stm32h735g_dk`. Cada configuracao deve usar
+seu proprio diretorio de build para impedir reaproveitamento acidental do cache,
+startup ou linker de outra placa.
+
+A DK e uma plataforma de desenvolvimento, nao uma variante do produto. Ela
+reutiliza `itm_core` e os contratos de porta, mas possui board support, clock,
+startup, linker, pinos e `.ioc` independentes.
