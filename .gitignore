@@ -9,6 +9,7 @@ cmake-build-*/
 out/
 .vscode/
 .idea/
+.tools/
 
 # OS/editor noise.
 Thumbs.db

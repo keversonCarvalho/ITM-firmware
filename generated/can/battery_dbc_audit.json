@@ -1,0 +1,516 @@
+{
+  "source": "config/can/Battery.dbc",
+  "dbc_sha256": "2ca7d5bb75dfb1cdfac3644ad0516a3eb5e175adefb0e4dc683ac4fa13698fbd",
+  "cantools_version": "41.0.2",
+  "generator_command": "python tools/generate_battery_dbc.py --write",
+  "messages": [
+    {
+      "name": "CAN_PACKET_BMS_TEMPS",
+      "frame_id": "0x2B0A",
+      "extended": true,
+      "length": 8,
+      "senders": [],
+      "signals": [
+        {
+          "name": "NoOfCells",
+          "start": 15,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "auxVoltagesIndividual1",
+          "start": 23,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": null,
+          "maximum": null,
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "auxVoltagesIndividual2",
+          "start": 39,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": null,
+          "maximum": null,
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "auxVoltagesIndividual3",
+          "start": 55,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": null,
+          "maximum": null,
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": []
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_V_TOT",
+      "frame_id": "0x260A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "packVoltage",
+          "start": 7,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "-3.4e+38",
+          "maximum": "3.4e+38",
+          "unit": "V",
+          "raw_type": "float32",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "chargerVoltage",
+          "start": 39,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_I",
+      "frame_id": "0x270A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "packCurrent1",
+          "start": 7,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "A",
+          "raw_type": "float32",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "packCurrent2",
+          "start": 39,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "A",
+          "raw_type": "float32",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_AH_WH",
+      "frame_id": "0x280A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "Ah_Counter",
+          "start": 7,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "Ah",
+          "raw_type": "float32",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "Wh_Counter",
+          "start": 39,
+          "length": 32,
+          "byte_order": "big_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "Wh",
+          "raw_type": "float32",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_V_CELL",
+      "frame_id": "0x290A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "cellPoint",
+          "start": 7,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "48",
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "NoOfCells",
+          "start": 15,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "48",
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "cellVoltage10",
+          "start": 23,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.001",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "cellVoltage11",
+          "start": 39,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.001",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "cellVoltage12",
+          "start": 55,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.001",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_BAL",
+      "frame_id": "0x2A0A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "NoOfCells",
+          "start": 0,
+          "length": 8,
+          "byte_order": "little_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": null,
+          "maximum": null,
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "bal_state",
+          "start": 8,
+          "length": 56,
+          "byte_order": "little_endian",
+          "signed": true,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_SOC_SOH_TEMP_STAT",
+      "frame_id": "0x2D0A",
+      "extended": true,
+      "length": 8,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "cellVoltageLow",
+          "start": 7,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.001",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "cellVoltageHigh",
+          "start": 23,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.001",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "V",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "SOC",
+          "start": 39,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.392156862745098",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "%",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "SOH",
+          "start": 47,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.3922",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "100",
+          "unit": "%",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "tBattHi",
+          "start": 55,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "C",
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        },
+        {
+          "name": "BitF",
+          "start": 63,
+          "length": 8,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "1",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": null,
+          "raw_type": "integer",
+          "receivers": [
+            "Master_LV_Board"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAN_PACKET_BMS_HUM",
+      "frame_id": "0x2C0A",
+      "extended": true,
+      "length": 6,
+      "senders": [
+        "Master_LV_Board"
+      ],
+      "signals": [
+        {
+          "name": "CAN_PACKET_BMS_TEMP0",
+          "start": 7,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "C",
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "CAN_PACKET_BMS_HUM_HUM",
+          "start": 23,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "%",
+          "raw_type": "integer",
+          "receivers": []
+        },
+        {
+          "name": "CAN_PACKET_BMS_HUM_TEMP1",
+          "start": 39,
+          "length": 16,
+          "byte_order": "big_endian",
+          "signed": false,
+          "scale": "0.01",
+          "offset": "0",
+          "minimum": "0",
+          "maximum": "1",
+          "unit": "C",
+          "raw_type": "integer",
+          "receivers": []
+        }
+      ]
+    }
+  ],
+  "reference_vectors": [
+    {
+      "message": "CAN_PACKET_BMS_V_TOT",
+      "data_hex": "41e400000000001e",
+      "decoded_by_cantools": {
+        "packVoltage": 28.5,
+        "chargerVoltage": 30
+      }
+    },
+    {
+      "message": "CAN_PACKET_BMS_SOC_SOH_TEMP_STAT",
+      "data_hex": "0ce4100480ff2aa5",
+      "decoded_by_cantools": {
+        "cellVoltageLow": 3.3000000000000003,
+        "cellVoltageHigh": 4.1,
+        "SOC": 50.19607843137254,
+        "SOH": 100.011,
+        "tBattHi": 42,
+        "BitF": 165
+      }
+    }
+  ]
+}
