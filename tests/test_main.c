@@ -22,6 +22,7 @@ bool test_persistence_survives_interrupted_write(void);
 bool test_power_control_sequences_outputs(void);
 bool test_power_control_fails_safe(void);
 bool test_telemetry_update_read_and_validation(void);
+bool test_telemetry_kv_contract_uses_static_keys_and_values(void);
 bool test_telemetry_timestamp_and_quality_transitions(void);
 bool test_telemetry_snapshot_consistency_and_producer_isolation(void);
 bool test_telemetry_counter_and_timestamp_wraparound(void);
@@ -87,6 +88,8 @@ int main(void)
                              test_power_control_fails_safe);
     failures += itm_run_test("telemetry update and validation",
                              test_telemetry_update_read_and_validation);
+    failures += itm_run_test("telemetry static KV contract",
+                             test_telemetry_kv_contract_uses_static_keys_and_values);
     failures += itm_run_test("telemetry quality transitions",
                              test_telemetry_timestamp_and_quality_transitions);
     failures += itm_run_test(

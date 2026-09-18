@@ -12,6 +12,14 @@ armazenamento de campanhas ou processamento relacional no equipamento.
 
 ## Decisao
 
+- Formalizar o armazenamento como KV de dominio fechado:
+  `Key = itm_telemetry_key_t` (alias de `itm_signal_id_t`) e
+  `Value = itm_telemetry_value_t` (alias de `itm_signal_runtime_t`).
+- Implementar `put/get` por indexacao direta da chave, com pior caso O(1), sem
+  hash, colisoes, busca ou alocacao. Manter `update/read` como aliases de
+  compatibilidade.
+- Nao permitir que produtores escrevam o valor runtime completo: qualidade e
+  contador continuam controlados pelo store depois das validacoes.
 - Usar um vetor estatico indexado por `itm_signal_id_t` para o ultimo valor.
 - Separar metadados constantes de valores mutaveis em runtime.
 - Representar medidas como inteiros escalados e expoente decimal, sem `float`.

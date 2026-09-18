@@ -5,9 +5,9 @@
 
 #define ITM_SERIALIZED_SIGNAL_SIZE 16U
 
-static bool valid_id(itm_signal_id_t id)
+bool itm_telemetry_key_is_valid(itm_telemetry_key_t key)
 {
-    return id < ITM_SIGNAL_COUNT;
+    return (uint32_t)key < (uint32_t)ITM_SIGNAL_COUNT;
 }
 
 static bool timestamp_before(uint32_t candidate, uint32_t reference)
@@ -50,20 +50,27 @@ static void refresh_stale_locked(itm_telemetry_store_t *store,
 bool itm_telemetry_store_init(itm_telemetry_store_t *store,
                               itm_critical_section_port_t critical)
 {
+    size_t index;
+
     if ((store == NULL) || (critical.enter == NULL) ||
         (critical.exit == NULL)) {
         return false;
+    }
+    for (index = 0U; index < ITM_SIGNAL_COUNT; ++index) {
+        if (itm_telemetry_catalog[index].id != (itm_signal_id_t)index) {
+            return false;
+        }
     }
     (void)memset(store, 0, sizeof(*store));
     store->critical = critical;
     return true;
 }
 
-itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,
-                                        itm_signal_source_t producer,
-                                        itm_signal_id_t id,
-                                        itm_signal_type_t type, int64_t value,
-                                        uint32_t timestamp_ms)
+itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
+                                     itm_signal_source_t producer,
+                                     itm_telemetry_key_t key,
+                                     itm_signal_type_t type, int64_t value,
+                                     uint32_t timestamp_ms)
 {
     const itm_signal_metadata_t *metadata;
     itm_signal_runtime_t *runtime;
@@ -73,13 +80,13 @@ itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,
         return ITM_ERROR_INVALID_ARGUMENT;
     }
     state = store->critical.enter(store->critical.context);
-    if (!valid_id(id)) {
+    if (!itm_telemetry_key_is_valid(key)) {
         store->statistics.rejected_identifier++;
         store->critical.exit(store->critical.context, state);
         return ITM_ERROR_INVALID_ARGUMENT;
     }
-    metadata = &itm_telemetry_catalog[id];
-    runtime = &store->values[id];
+    metadata = &itm_telemetry_catalog[key];
+    runtime = &store->values[key];
     if (producer != metadata->source) {
         store->statistics.rejected_source++;
         store->critical.exit(store->critical.context, state);
@@ -113,6 +120,16 @@ itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,
     return ITM_OK;
 }
 
+itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,
+                                        itm_signal_source_t producer,
+                                        itm_signal_id_t id,
+                                        itm_signal_type_t type, int64_t value,
+                                        uint32_t timestamp_ms)
+{
+    return itm_telemetry_store_put(store, producer, id, type, value,
+                                   timestamp_ms);
+}
+
 itm_result_t itm_telemetry_store_invalidate(itm_telemetry_store_t *store,
                                             itm_signal_source_t producer,
                                             itm_signal_id_t id,
@@ -125,7 +142,7 @@ itm_result_t itm_telemetry_store_invalidate(itm_telemetry_store_t *store,
         return ITM_ERROR_INVALID_ARGUMENT;
     }
     state = store->critical.enter(store->critical.context);
-    if (!valid_id(id)) {
+    if (!itm_telemetry_key_is_valid(id)) {
         store->statistics.rejected_identifier++;
         store->critical.exit(store->critical.context, state);
         return ITM_ERROR_INVALID_ARGUMENT;
@@ -151,20 +168,29 @@ itm_result_t itm_telemetry_store_invalidate(itm_telemetry_store_t *store,
     return ITM_OK;
 }
 
-itm_result_t itm_telemetry_store_read(itm_telemetry_store_t *store,
-                                      itm_signal_id_t id, uint32_t now_ms,
-                                      itm_signal_runtime_t *value)
+itm_result_t itm_telemetry_store_get(itm_telemetry_store_t *store,
+                                     itm_telemetry_key_t key,
+                                     uint32_t now_ms,
+                                     itm_telemetry_value_t *value)
 {
     itm_critical_state_t state;
 
-    if ((store == NULL) || (value == NULL) || !valid_id(id)) {
+    if ((store == NULL) || (value == NULL) ||
+        !itm_telemetry_key_is_valid(key)) {
         return ITM_ERROR_INVALID_ARGUMENT;
     }
     state = store->critical.enter(store->critical.context);
     refresh_stale_locked(store, now_ms);
-    *value = store->values[id];
+    *value = store->values[key];
     store->critical.exit(store->critical.context, state);
     return ITM_OK;
+}
+
+itm_result_t itm_telemetry_store_read(itm_telemetry_store_t *store,
+                                      itm_signal_id_t id, uint32_t now_ms,
+                                      itm_signal_runtime_t *value)
+{
+    return itm_telemetry_store_get(store, id, now_ms, value);
 }
 
 itm_result_t itm_telemetry_store_snapshot(itm_telemetry_store_t *store,

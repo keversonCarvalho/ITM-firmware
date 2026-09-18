@@ -158,6 +158,8 @@ drivers/protocols -> normalizacao inteira -> telemetry_store
 
 - O catalogo imutavel define ID, tipo, unidade, expoente decimal, origem, faixa
   e timeout de stale de cada sinal.
+- O store e um KV estatico de dominio fechado: a chave `itm_signal_id_t` indexa
+  diretamente o valor `itm_signal_runtime_t`, com acesso O(1) e sem heap.
 - O store mantem apenas ultimo valor, timestamp, qualidade e contador.
 - A origem e validada para impedir escrita cruzada entre produtores.
 - A normalizacao usa regra inteira `raw * numerator / denominator + offset`.

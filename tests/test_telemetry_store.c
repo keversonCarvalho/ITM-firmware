@@ -14,6 +14,32 @@ static itm_telemetry_store_t create_store(mock_critical_t *critical)
     return store;
 }
 
+bool test_telemetry_kv_contract_uses_static_keys_and_values(void)
+{
+    mock_critical_t critical;
+    itm_telemetry_store_t store = create_store(&critical);
+    itm_telemetry_key_t key = ITM_SIGNAL_AV_BATT_VOLTAGE;
+    itm_telemetry_value_t value;
+
+    TEST_ASSERT(itm_telemetry_key_is_valid(key));
+    TEST_ASSERT(!itm_telemetry_key_is_valid(ITM_SIGNAL_COUNT));
+    TEST_ASSERT(!itm_telemetry_key_is_valid((itm_telemetry_key_t)-1));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(
+                               &store, ITM_SOURCE_AV_BATT, key,
+                               ITM_SIGNAL_TYPE_U32, 28500, 10U));
+    TEST_ASSERT_EQ(ITM_OK,
+                   itm_telemetry_store_get(&store, key, 10U, &value));
+    TEST_ASSERT_EQ(28500, value.value);
+    TEST_ASSERT_EQ(10U, value.timestamp_ms);
+    TEST_ASSERT_EQ(1U, value.update_counter);
+    TEST_ASSERT_EQ(ITM_SIGNAL_QUALITY_VALID, value.quality);
+    TEST_ASSERT_EQ(ITM_ERROR_INVALID_ARGUMENT,
+                   itm_telemetry_store_put(
+                       &store, ITM_SOURCE_CEB, key, ITM_SIGNAL_TYPE_U32,
+                       28500, 11U));
+    return true;
+}
+
 bool test_telemetry_update_read_and_validation(void)
 {
     mock_critical_t critical;

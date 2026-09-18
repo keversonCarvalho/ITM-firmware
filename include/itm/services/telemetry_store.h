@@ -22,6 +22,10 @@ typedef struct {
     bool has_timestamp;
 } itm_signal_runtime_t;
 
+/* Closed-domain KV contract: keys map directly to fixed array positions. */
+typedef itm_signal_id_t itm_telemetry_key_t;
+typedef itm_signal_runtime_t itm_telemetry_value_t;
+
 typedef struct {
     uint32_t accepted_updates;
     uint32_t rejected_identifier;
@@ -54,6 +58,18 @@ typedef struct {
 
 bool itm_telemetry_store_init(itm_telemetry_store_t *store,
                               itm_critical_section_port_t critical);
+bool itm_telemetry_key_is_valid(itm_telemetry_key_t key);
+itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
+                                     itm_signal_source_t producer,
+                                     itm_telemetry_key_t key,
+                                     itm_signal_type_t type, int64_t value,
+                                     uint32_t timestamp_ms);
+itm_result_t itm_telemetry_store_get(itm_telemetry_store_t *store,
+                                     itm_telemetry_key_t key,
+                                     uint32_t now_ms,
+                                     itm_telemetry_value_t *value);
+
+/* Compatibility names retained for existing producers and consumers. */
 itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,
                                         itm_signal_source_t producer,
                                         itm_signal_id_t id,
