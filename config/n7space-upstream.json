@@ -4,6 +4,7 @@
   "commit": "33f62875479028c11907340a88ec9596828bb20b",
   "license": "Apache-2.0",
   "selection": "include/, lib/co/, lib/can/, lib/compat/, lib/util/, LICENSE, NOTICE, configure.ac",
+  "local_changes": "No changes to the 275 pinned upstream source files; CMake selection is maintained in cmake/n7space.cmake",
   "source_tree_sha256": "f79a8d8c4ea148c0cbda48affb5d7ea9a03fc312ed325bde0df4f22a81a00d39",
   "qualification": "Not a qualification claim for ITM or STM32. Target-specific verification required."
 }

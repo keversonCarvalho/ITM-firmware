@@ -31,18 +31,21 @@ ICDs ainda nao estao definidos. O DBCC BMS esta parcial e ainda depende da
 validacao das ambiguidades do DBC e dos parametros fisicos da CAN. N7 Space ECSS v3.5.0 esta
 integrada com adaptador FDCAN e bootloader A/B de bancada. A qualificacao de voo permanece pendente.
 
-O codigo de terceiros nao e versionado neste repositorio. Antes de compilar,
-obtenha a revisao fixada da N7 Space e confira os arquivos usados pelo build:
+O codigo-fonte da N7 Space utilizado pelo firmware esta preservado em
+`third_party/n7space`. O build usa a revisao fixada e uma selecao explicita
+de fontes, sem buscar dependencias na rede. Antes de gerar uma baseline,
+confira a integridade da copia versionada:
 
 ```powershell
-New-Item -ItemType Directory -Force third_party | Out-Null
-git clone https://gitlab.com/n7space/canopen/lely-core.git third_party/n7space
-git -C third_party/n7space checkout 33f62875479028c11907340a88ec9596828bb20b
 python tools/verify_n7space_source.py
 ```
 
-O commit, a lista de arquivos e o digest estao em
-`config/n7space-upstream.json` e `config/n7space-files.txt`.
+A origem, o commit `33f62875479028c11907340a88ec9596828bb20b`, a
+lista de arquivos e o digest estao em `config/n7space-upstream.json` e
+`config/n7space-files.txt`. Os avisos de licenca acompanham o codigo em
+`third_party/n7space/LICENSE` e `third_party/n7space/NOTICE`. Atualizacoes
+da biblioteca exigem nova revisao, verificacao e testes do alvo; a copia
+versionada nao representa, por si so, qualificacao para voo.
 
 ## DBCC Das Baterias
 

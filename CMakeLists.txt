@@ -25,10 +25,16 @@ if(NOT ITM_HARDWARE IN_LIST _itm_hardware_values)
         "Invalid ITM_HARDWARE='${ITM_HARDWARE}'. Expected: ${_itm_hardware_values}")
 endif()
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 include(cmake/n7space.cmake)
-find_package(Python3 COMPONENTS Interpreter QUIET)
 
 if(Python3_Interpreter_FOUND)
+    add_custom_target(itm_verify_n7space_source
+        COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tools/verify_n7space_source.py"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        VERBATIM)
+    add_dependencies(itm_n7space itm_verify_n7space_source)
     add_custom_target(itm_generate_battery_dbc
         COMMAND "${Python3_EXECUTABLE}"
                 "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_battery_dbc.py"

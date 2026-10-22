@@ -1,10 +1,9 @@
-# The N7 Space sources are fetched separately and are not committed here.
+# The pinned N7 Space sources are vendored in this repository.
 set(_n7_root "${PROJECT_SOURCE_DIR}/third_party/n7space")
 if(NOT EXISTS "${_n7_root}/lib/co/sdo.c" OR
    NOT EXISTS "${_n7_root}/include/lely/co/sdo.h")
     message(FATAL_ERROR
-        "N7 Space sources missing. Clone https://gitlab.com/n7space/canopen/lely-core.git "
-        "to third_party/n7space and checkout commit 33f62875479028c11907340a88ec9596828bb20b")
+        "Vendored N7 Space sources missing from third_party/n7space; restore the repository checkout")
 endif()
 
 # Embedded feature selection mirrors --enable-ecss-compliance in configure.ac.
