@@ -53,10 +53,53 @@ SupportedObjects=4
 4=0x1017
 
 [ManufacturerObjects]
-SupportedObjects=3
-1=0x2000
-2=0x2001
-3=0x2002
+SupportedObjects=22
+1=0x2100
+2=0x2101
+3=0x2102
+4=0x2103
+5=0x2104
+6=0x2105
+7=0x2106
+8=0x2107
+9=0x2108
+10=0x2109
+11=0x210A
+12=0x2110
+13=0x2111
+14=0x2112
+15=0x2120
+16=0x2121
+17=0x2122
+18=0x2123
+19=0x2124
+20=0x2125
+21=0x2126
+22=0x2127
+
+[2104]
+ParameterName=Running image slot (0=A,1=B)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2105]
+ParameterName=Running image version
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2106]
+ParameterName=Running image confirmed
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
 
 [1000]
 ParameterName=Device type
@@ -86,8 +129,8 @@ PDOMapping=0
 ParameterName=Manufacturer software version
 ObjectType=0x7
 DataType=0x0009
-AccessType=const
-DefaultValue=1.2.0
+AccessType=ro
+DefaultValue=0
 PDOMapping=0
 
 [1010]
@@ -164,7 +207,7 @@ AccessType=ro
 DefaultValue=0
 PDOMapping=0
 
-[2000]
+[2100]
 ParameterName=Configuration version
 ObjectType=0x7
 DataType=0x0007
@@ -172,7 +215,7 @@ AccessType=ro
 DefaultValue=0
 PDOMapping=0
 
-[2001]
+[2101]
 ParameterName=Configured node-ID
 ObjectType=0x7
 DataType=0x0005
@@ -182,10 +225,200 @@ HighLimit=127
 DefaultValue=10
 PDOMapping=0
 
-[2002]
+[2103]
+ParameterName=Request XCP maintenance boot (UPDT signature)
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[2102]
 ParameterName=RET telemetry period in milliseconds
 ObjectType=0x7
 DataType=0x0006
 AccessType=ro
 DefaultValue=10
+PDOMapping=0
+
+[2107]
+ParameterName=Hardware part number (provisional)
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+DefaultValue=ITM-100-REV00-PROVISIONAL
+PDOMapping=0
+
+[2108]
+ParameterName=Firmware part number (provisional)
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+DefaultValue=ITM-100-FW-PROVISIONAL
+PDOMapping=0
+
+[2109]
+ParameterName=Full hardware unique identifier (96-bit hex)
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+DefaultValue=000000000000000000000000
+PDOMapping=0
+
+[210A]
+ParameterName=Running firmware image CRC-32
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110]
+ParameterName=CEB UART receive diagnostics (bench)
+ObjectType=0x9
+SubNumber=8
+
+[2110sub0]
+ParameterName=Highest sub-index supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=7
+PDOMapping=0
+
+[2110sub1]
+ParameterName=Valid CEB telemetry frames
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub2]
+ParameterName=CEB telemetry CRC errors
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub3]
+ParameterName=CEB telemetry framing errors
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub4]
+ParameterName=CEB frame counter gaps
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub5]
+ParameterName=UART4 hardware or ring errors
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub6]
+ParameterName=Last accepted CEB frame counter
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2110sub7]
+ParameterName=Last CEB 28V supply measurement in mV
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2111]
+ParameterName=CEB telemetry snapshot (v1 value:quality CSV)
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+DefaultValue=
+PDOMapping=0
+
+[2112]
+ParameterName=Complete telemetry snapshot (71 binary records)
+ObjectType=0x7
+DataType=0x000A
+AccessType=ro
+DefaultValue=
+PDOMapping=0
+
+; Bench-only power control. Values are volatile and reset to off/50 ms.
+[2120]
+ParameterName=Bench power request (0=off,1=CEB,2=CEB+CB; renew within 1 s)
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[2121]
+ParameterName=Bench power state (power_control enum)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2122]
+ParameterName=CB feedback debounce in milliseconds (volatile)
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=50
+PDOMapping=0
+
+[2123]
+ParameterName=CEB startup delay in milliseconds (volatile; no feedback)
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=50
+PDOMapping=0
+
+[2124]
+ParameterName=CB feedback timeout in milliseconds (volatile)
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=50
+PDOMapping=0
+
+[2125]
+ParameterName=EM1 upstream CB monitor in millivolts (nominal)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2126]
+ParameterName=EM2 downstream CB monitor in millivolts (nominal)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[2127]
+ParameterName=CB condition (0=pending,1=normal,2=disconnected,3=monitor fault,4=stuck on,5=stuck off,6=invalid)
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=0
 PDOMapping=0

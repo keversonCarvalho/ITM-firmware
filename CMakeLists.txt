@@ -25,7 +25,7 @@ if(NOT ITM_HARDWARE IN_LIST _itm_hardware_values)
         "Invalid ITM_HARDWARE='${ITM_HARDWARE}'. Expected: ${_itm_hardware_values}")
 endif()
 
-find_program(ITM_DCF2C_EXECUTABLE NAMES dcf2c)
+include(cmake/n7space.cmake)
 find_package(Python3 COMPONENTS Interpreter QUIET)
 
 if(Python3_Interpreter_FOUND)
@@ -43,39 +43,37 @@ if(Python3_Interpreter_FOUND)
         VERBATIM)
 endif()
 
-if(ITM_DCF2C_EXECUTABLE)
-    set(ITM_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
-    set(ITM_GENERATED_OD "${ITM_GENERATED_DIR}/itm_canopen_od.c")
-    add_custom_command(
-        OUTPUT "${ITM_GENERATED_OD}"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${ITM_GENERATED_DIR}"
-        COMMAND "${ITM_DCF2C_EXECUTABLE}" --no-strings
-                --output="${ITM_GENERATED_OD}"
-                "${CMAKE_CURRENT_SOURCE_DIR}/config/canopen/itm-100.eds"
-                itm_canopen_od
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/config/canopen/itm-100.eds"
-        COMMENT "Generating the static Lely CANopen object dictionary"
-        VERBATIM
-    )
-    add_custom_target(itm_lely_od DEPENDS "${ITM_GENERATED_OD}")
-else()
-    message(STATUS "Lely dcf2c not found; itm_lely_od target is unavailable")
-endif()
-
 add_library(itm_core STATIC
     generated/can/battery_dbc_generated.c
     src/app/cb_monitor.c
+    src/app/cb_voltage.c
     src/app/power_control.c
     src/app/telemetry_catalog.c
     src/protocols/itm_dbcc.c
+    src/protocols/ceb_tlm.c
+    src/protocols/itm_rs422_tlm.c
     src/services/bc_supervisor.c
     src/services/canopen_ret.c
     src/services/diagnostics.c
     src/services/persistence.c
+    src/services/firmware_update.c
+    src/protocols/xcp_update.c
     src/services/telemetry_ring.c
     src/services/telemetry_normalizer.c
     src/services/telemetry_store.c
 )
+
+add_library(itm_canopen STATIC src/protocols/n7space.c)
+target_include_directories(itm_canopen PUBLIC include PRIVATE generated/canopen)
+target_link_libraries(itm_canopen PUBLIC itm_core PRIVATE itm_n7space)
+if(Python3_Interpreter_FOUND)
+    add_custom_target(itm_n7space_od
+        COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/generate_n7space_od.py"
+        VERBATIM)
+    add_custom_target(itm_check_n7space_od
+        COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/generate_n7space_od.py" --check
+        VERBATIM)
+endif()
 
 target_include_directories(itm_core PUBLIC include generated/can)
 target_compile_features(itm_core PUBLIC c_std_11)

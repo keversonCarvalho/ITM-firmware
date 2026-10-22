@@ -4,8 +4,8 @@
 
 static itm_telemetry_event_t event_with_value(int64_t value)
 {
-    return (itm_telemetry_event_t){ITM_SIGNAL_CB_STATE, ITM_SOURCE_CB,
-                                   ITM_SIGNAL_TYPE_BOOL,
+    return (itm_telemetry_event_t){ITM_SIGNAL_AV_BATT_SOC, ITM_SOURCE_AV_BATT,
+                                   ITM_SIGNAL_TYPE_U32,
                                    ITM_SIGNAL_QUALITY_VALID, value,
                                    (uint32_t)value};
 }

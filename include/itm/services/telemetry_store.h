@@ -20,6 +20,9 @@ typedef struct {
     uint32_t update_counter;
     itm_signal_quality_t quality;
     bool has_timestamp;
+    /* Exact CEB ADC/status word, retained alongside the engineering value. */
+    uint16_t ceb_raw;
+    bool has_ceb_raw;
 } itm_signal_runtime_t;
 
 /* Closed-domain KV contract: keys map directly to fixed array positions. */
@@ -64,6 +67,11 @@ itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
                                      itm_telemetry_key_t key,
                                      itm_signal_type_t type, int64_t value,
                                      uint32_t timestamp_ms);
+itm_result_t itm_telemetry_store_put_ceb_raw(itm_telemetry_store_t *store,
+                                             itm_signal_id_t id,
+                                             int64_t engineering_value,
+                                             uint16_t raw,
+                                             uint32_t timestamp_ms);
 itm_result_t itm_telemetry_store_get(itm_telemetry_store_t *store,
                                      itm_telemetry_key_t key,
                                      uint32_t now_ms,

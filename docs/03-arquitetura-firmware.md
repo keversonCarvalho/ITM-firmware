@@ -137,7 +137,7 @@ Responsavel por:
 
 Primeira implementacao:
 
-- Lely Core (`liblely-co`) selecionada, em alinhamento com o CANopus.
+- N7 Space ECSS v3.5.0 integrada com alocacao estatica.
 - ITM atua como dispositivo/slave; CANopus atua como mestre/gateway de bancada.
 - Object Dictionary inicial em `config/canopen/itm-100.eds`.
 - Identidade `0x1018` usa Vendor-ID Concert Space `0x000006A9`.
@@ -145,8 +145,7 @@ Primeira implementacao:
   persistidos por `0x1010`.
 - Telemetria RET fixada em 10 ms apenas como periodo nominal derivado de 100 Hz;
   objetos e PDOs permanecem bloqueados pelo ICD.
-- Adaptacao de CAN frames, timers e NMT da Lely para FDCAN/FreeRTOS fica restrita
-  a futura camada `platform/lely`.
+- Adaptacao da N7 Space para CAN e timers em `src/protocols/n7space.c` e `platform/stm32h723`.
 
 ### Pipeline De Telemetria
 

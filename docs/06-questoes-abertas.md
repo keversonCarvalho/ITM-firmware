@@ -90,24 +90,17 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
   Provisoriamente usa-se `major << 16 | minor << 8 | patch`, resultando em
   `0x00010200` para 1.2.0.
 - Node-ID inicial confirmado: 10. Ainda falta confirmar qual objeto SDO oficial
-  o altera; `0x2001` permanece provisorio e o servico aceita a faixa 1..127.
+  o altera; `0x2101` permanece provisorio e o servico aceita a faixa 1..127.
 - Qual heartbeat producer time e quais consumidores devem ser configurados?
   Afeta `0x1017`, supervisao de rede e comportamento NMT.
 - Quais telemetrias entram em TPDO/RPDO, seus tipos, escalas, COB-IDs, modos de
   transmissao, inhibit times e event timers? Afeta REQ-ITM15/34/40.
 - A taxa de 100 Hz de REQ-ITM40 se aplica a todos os TPDOs, a um subconjunto ou
   ao ciclo de aquisicao? Provisoriamente foi exposto periodo nominal de 10 ms em
-  objeto fabricante read-only `0x2002`, sem configurar PDO.
-- Qual versao ou commit da Lely Core deve ser qualificado? O CANopus nao fixa
-  versao e sua integracao real ainda possui placeholders.
-- Deve ser usada a Lely upstream ou a variante N7/ECSS mencionada no material
-  de referencia? Afeta conformidade ECSS, memoria e manutencao.
-- Quais opcoes da Lely serao usadas para operacao sem heap e quais limites
-  estaticos serao aprovados? Afeta RAM, determinismo e analise de pior caso.
-- Como adaptar `liblely-co` ao STM32 FDCAN, timers e FreeRTOS? O CANopus usa
-  SocketCAN/Linux, que nao e reutilizavel no microcontrolador.
-- O EDS sera a fonte de verdade e o C gerado por `dcf2c` sera versionado ou
-  gerado no build? Afeta reproducibilidade e qualificacao.
+  objeto fabricante read-only `0x2102`, sem configurar PDO.
+- Qual politica de assinatura, chaves e antirrollback sera aprovada para voo?
+- Como qualificar o port FDCAN e a atualizacao XCP no STM32H723?
+- Quais COB-IDs do XCP estao reservados no ICD da RET?
 - Quais Error Register/EMCY codes e Error Behavior devem representar falhas do
   ITM? Afeta `0x1001`, EMCY e diagnosticos.
 - O DDS Micro XRCE e requisito confirmado ou apenas possibilidade de arquitetura?
@@ -118,11 +111,11 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 - Qual timestamp deve ser usado para telemetria?
 - Como representar validade, stale data e falha de origem?
 - Qual granularidade de diagnostico e eventos?
-- Qual e a lista definitiva de sinais de AV_BATT, ACT_BATT, CEB e CB? Afeta
+- Qual e a lista definitiva de sinais de AV_BATT, ACT_BATT e CEB? Afeta
   `app/telemetry_catalog`, memoria, testes e mapeamento CANopen.
 - Para cada sinal, quais sao tipo bruto, unidade, escala, offset, faixa valida,
-  taxa de aquisicao e timeout de stale? Os oito sinais atuais e seus valores sao
-  exemplos provisorios centralizados no catalogo.
+  taxa de aquisicao e timeout de stale? O catalogo atual contem 71 sinais,
+  com unidades e limites a confirmar nos ICDs oficiais.
 - Timestamp igual ao anterior representa amostra valida, duplicata ou erro?
   Provisoriamente apenas timestamps estritamente anteriores sao rejeitados.
 - Como tratar reset ou salto da base monotonicamente crescente? A comparacao

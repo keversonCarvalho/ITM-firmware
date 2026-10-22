@@ -30,29 +30,35 @@ SHA-256 do DBC e todas as mensagens e sinais importados.
 
 `itm_dbcc_frame_t` carrega barramento de origem, CAN ID, tipo de identificador,
 DLC, oito bytes e timestamp monotonico. `itm_dbcc_decode` decodifica as oito
-mensagens sem acessar HAL. `itm_dbcc_ingest` atualiza apenas tensao total e SOC,
-os sinais que ja possuem entradas distintas para AV_BATT e ACT_BATT no
-catalogo. Os demais valores ficam disponiveis na saida normalizada do decoder,
-mas nao sao publicados antes de aprovar faixas e semantica.
+mensagens sem acessar HAL. `itm_dbcc_ingest` atualiza todos os 26 sinais do DBC
+em cada rede, totalizando 52 entradas independentes no snapshot. Cada entrada
+guarda o ultimo valor aceito, a origem, o timestamp e a qualidade. O snapshot
+nao e uma serie temporal: uma mensagem nova substitui o valor anterior daquele
+sinal. Em `V_CELL`, `cellPoint` e as tres tensoes correspondem apenas ao ultimo
+grupo recebido; o snapshot nao acumula as 48 celulas indexadas.
 
 Os cinco `SIG_VALTYPE_` IEEE-754 sao desempacotados pelo codec gerado. Na
 fronteira manual, NaN, infinito e overflow sao rejeitados, e valores validos
 sao convertidos para inteiros com escala de milesimos. Nenhum `float` e
-armazenado na telemetria.
+armazenado na telemetria. Os demais campos mantem a escala inteira do DBC:
+tensoes de celula em mV, tensoes auxiliares e temperatura/umidade em centesimos,
+SOC e SOH em centesimos de porcento, contadores sem escala e mascara de
+balanceamento em inteiro de 64 bits. As faixas do catalogo para os novos sinais
+sao provisorias; os minimos/maximos do DBC tambem contem valores incompativeis
+com as escalas de varios sinais e exigem revisao com o ICD da bateria.
 
 Todos os IDs sao estendidos: `0x260A` a `0x2D0A`. Sete mensagens possuem DLC 8;
 `CAN_PACKET_BMS_HUM` (`0x2C0A`) possui DLC 6. O DBC nao informa periodos.
 
 ## Memoria E Limites
 
-O codigo gerado nao aloca memoria dinamica. Uma instancia de `itm_dbcc_t`
+O codigo gerado e o snapshot nao alocam memoria dinamica. Uma instancia de `itm_dbcc_t`
 contem um ponteiro para o store e oito contadores de 32 bits: estimativa de 36
 bytes em ARM de 32 bits, alem das variaveis automaticas limitadas. Os testes de
 host nao substituem bitrate, filtros FDCAN, temporizacoes, vetores oficiais nem
 ensaio nas duas redes fisicas.
 
-Com Arm GNU 12.2.1 e `-Os`, os objetos antes de eliminacao pelo linker mediram
-2348 bytes de texto para o codec gerado e 1592 bytes para o wrapper, total de
-3940 bytes de flash e zero bytes de dados/BSS. O executavel de bring-up ainda
-nao chama o DBCC, portanto `--gc-sections` pode remover parte ou todo esse codigo;
-o consumo final deve ser medido novamente quando o FDCAN estiver integrado.
+No build atual de bancada, cada imagem de aplicacao ocupa cerca de 69 KiB de
+flash e 39,7 KiB de RAM, incluindo o DBCC, o snapshot, CANopen e a logica de
+atualizacao. Os numeros de objetos medidos antes da integracao FDCAN nao
+representam mais o firmware completo.

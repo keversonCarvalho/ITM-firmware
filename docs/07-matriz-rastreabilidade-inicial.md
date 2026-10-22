@@ -34,8 +34,8 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
 | Protocolo BMS/DBCC | Parcial | DBC auditado, codec C gerado, wrapper portatil e testes de host | Validar ambiguidades do DBC, bitrate, filtros, periodos e vetores oficiais |
 | Protocolos BC/CEB | Bloqueado | Somente interfaces e mocks de transporte | ICDs e bases de tempo |
-| CANopen RET | Parcial | Lely selecionada; EDS, identidade `0x1018`, Node-ID inicial 10, SDO de configuracao, persistencia e testes | Port Lely/FDCAN, Product Code, heartbeat, PDOs e perfil ECSS detalhado |
-| Pipeline de telemetria | Parcial | Catalogo com 8 sinais provisorios, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
+| CANopen RET | Parcial | N7 Space ECSS integrada; EDS, identidade `0x1018`, Node-ID inicial 10 e SDO de configuracao | Ensaio FDCAN na placa, Product Code, PDOs e perfil ECSS detalhado |
+| Pipeline de telemetria | Parcial | Catalogo com 71 sinais de BMS e CEB, normalizacao inteira, store, snapshot CANopen, ring e testes | ICDs, catalogo final, politica por fluxo, TPDOs e medicao temporal no STM32 |
 | STM32H723VGT6 | Parcial | `.ioc`, startup/linker/CMSIS/HAL oficiais, build ARM, clock HSE 8 MHz, GPIO seguro e bring-up minimo | Ensaio na placa, polaridades, MPU/cache, watchdog, perifericos, DMA/IRQ e mapa final de memoria |
 | STM32H735G-DK | Parcial | Alvo separado, HSE 25 MHz, LEDs, botao, VCP USART3, FDCAN1 loopback e build ARM | Gravar na DK e registrar evidencias fisicas de LED, botao, VCP e loopback |
 

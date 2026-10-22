@@ -110,6 +110,33 @@ bool test_canopen_validates_node_id_range(void)
                                              sizeof(invalid_node_id)));
     return true;
 }
+bool test_canopen_management_from_nonvolatile_sources(void)
+{
+    mock_flash_t flash;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    const uint8_t uid[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    uint8_t value[32] = {0};
+    uint32_t crc = 0;
+    size_t size = 0;
+    TEST_ASSERT(itm_canopen_ret_set_management(&service, uid, 7, 0x12345678UL));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(
+        &service, ITM_OD_SOFTWARE_VERSION, 0, value, sizeof(value), &size));
+    TEST_ASSERT_EQ(1, size);
+    TEST_ASSERT_EQ('7', value[0]);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(
+        &service, ITM_OD_HARDWARE_UID, 0, value, sizeof(value), &size));
+    TEST_ASSERT_EQ(24, size);
+    TEST_ASSERT(memcmp(value, "000102030405060708090A0B", size) == 0);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(
+        &service, ITM_OD_FIRMWARE_CRC, 0,
+        (uint8_t *)&crc, sizeof(crc), &size));
+    TEST_ASSERT_EQ(0x12345678UL, crc);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_READ_ONLY, itm_canopen_ret_sdo_write(
+        &service, ITM_OD_FIRMWARE_CRC, 0,
+        (const uint8_t *)&crc, sizeof(crc)));
+    return true;
+}
 
 bool test_canopen_captures_telemetry_through_snapshot_port(void)
 {
@@ -130,12 +157,131 @@ bool test_canopen_captures_telemetry_through_snapshot_port(void)
         &service, itm_telemetry_store_snapshot_port(&telemetry)));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
                                &telemetry, ITM_SOURCE_CEB,
-                               ITM_SIGNAL_CEB_TEMPERATURE,
+                               ITM_SIGNAL_CEB_PITCH_ACTUATOR_TEMPERATURE,
                                ITM_SIGNAL_TYPE_I32, 2500, 10U));
     TEST_ASSERT_EQ(ITM_OK,
                    itm_canopen_ret_capture_telemetry(&service, 10U,
                                                      &snapshot));
     TEST_ASSERT_EQ(2500,
-                   snapshot.values[ITM_SIGNAL_CEB_TEMPERATURE].value);
+                   snapshot.values[ITM_SIGNAL_CEB_PITCH_ACTUATOR_TEMPERATURE].value);
+    return true;
+}
+
+static bool mock_ceb_diagnostic(void *context, uint8_t subindex,
+                                uint32_t *value)
+{
+    const uint32_t *frames = context;
+    if (subindex != 1 || !frames || !value) return false;
+    *value = *frames;
+    return true;
+}
+
+bool test_canopen_ceb_diagnostics_are_read_only(void)
+{
+    mock_flash_t flash;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    uint32_t frames = 42, value = 0;
+    uint8_t count = 0;
+    size_t size = 0;
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_CEB_DIAGNOSTICS, 0, &count, sizeof(count), &size));
+    TEST_ASSERT_EQ(7, count);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_HARDWARE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_CEB_DIAGNOSTICS, 1, (uint8_t *)&value, sizeof(value), &size));
+    TEST_ASSERT(itm_canopen_ret_bind_ceb_diagnostics(&service,
+        mock_ceb_diagnostic, &frames));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_CEB_DIAGNOSTICS, 1, (uint8_t *)&value, sizeof(value), &size));
+    TEST_ASSERT_EQ(42, value);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_READ_ONLY, itm_canopen_ret_sdo_write(&service,
+        ITM_OD_CEB_DIAGNOSTICS, 1, (const uint8_t *)&value, sizeof(value)));
+    return true;
+}
+
+static uint32_t mock_telemetry_clock(void *context)
+{
+    return *(const uint32_t *)context;
+}
+
+bool test_canopen_ceb_snapshot_is_atomic_and_read_only(void)
+{
+    mock_flash_t flash;
+    mock_critical_t critical;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    itm_telemetry_store_t telemetry;
+    uint32_t now = 10;
+    uint8_t encoded[384] = {0};
+    size_t size = 0;
+    mock_critical_init(&critical);
+    TEST_ASSERT(itm_telemetry_store_init(&telemetry, mock_critical_port(&critical)));
+    TEST_ASSERT(itm_canopen_ret_bind_telemetry(&service,
+        itm_telemetry_store_snapshot_port(&telemetry)));
+    TEST_ASSERT(itm_canopen_ret_bind_telemetry_clock(&service,
+        mock_telemetry_clock, &now));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(&telemetry, ITM_SOURCE_CEB,
+        ITM_SIGNAL_CEB_PITCH_MAIN_LVDT, ITM_SIGNAL_TYPE_I32, -5000, 10));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(&telemetry, ITM_SOURCE_CEB,
+        ITM_SIGNAL_CEB_FRAME_COUNTER, ITM_SIGNAL_TYPE_U32, 42, 10));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_CEB_SNAPSHOT, 0, encoded, sizeof(encoded), &size));
+    TEST_ASSERT(size > 80 && size < sizeof(encoded));
+    encoded[size] = 0;
+    TEST_ASSERT(strncmp((const char *)encoded, "1;-5000:1,0:0,", 14) == 0);
+    TEST_ASSERT(strstr((const char *)encoded, ",42:1") != NULL);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_READ_ONLY, itm_canopen_ret_sdo_write(&service,
+        ITM_OD_CEB_SNAPSHOT, 0, encoded, 4));
+    now = 111;
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_CEB_SNAPSHOT, 0, encoded, sizeof(encoded), &size));
+    encoded[size] = 0;
+    TEST_ASSERT(strncmp((const char *)encoded, "1;-5000:2,0:0,", 14) == 0);
+    return true;
+}
+
+bool test_canopen_full_snapshot_includes_both_batteries_and_ceb(void)
+{
+    mock_flash_t flash;
+    mock_critical_t critical;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    itm_telemetry_store_t telemetry;
+    uint32_t now = 10;
+    uint8_t encoded[ITM_SIGNAL_COUNT * 16U] = {0};
+    size_t size = 0;
+    mock_critical_init(&critical);
+    TEST_ASSERT(itm_telemetry_store_init(&telemetry, mock_critical_port(&critical)));
+    TEST_ASSERT(itm_canopen_ret_bind_telemetry(&service,
+        itm_telemetry_store_snapshot_port(&telemetry)));
+    TEST_ASSERT(itm_canopen_ret_bind_telemetry_clock(&service,
+        mock_telemetry_clock, &now));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(&telemetry, ITM_SOURCE_AV_BATT,
+        ITM_SIGNAL_AV_BATT_VOLTAGE, ITM_SIGNAL_TYPE_U32, 28500, 10));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(&telemetry, ITM_SOURCE_ACT_BATT,
+        ITM_SIGNAL_ACT_BATT_VOLTAGE, ITM_SIGNAL_TYPE_U32, 150000, 10));
+    TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_put(&telemetry, ITM_SOURCE_CEB,
+        ITM_SIGNAL_CEB_PITCH_MAIN_LVDT, ITM_SIGNAL_TYPE_I32, 5000, 10));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_TYPE_MISMATCH, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_FULL_SNAPSHOT, 0, encoded, sizeof(encoded) - 1U, &size));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_FULL_SNAPSHOT, 0, encoded, sizeof(encoded), &size));
+    TEST_ASSERT_EQ(sizeof(encoded), size);
+    TEST_ASSERT_EQ(0, encoded[0]);
+    TEST_ASSERT_EQ(1, encoded[3]);
+    TEST_ASSERT_EQ(0x54, encoded[8]); /* 28500 mV, little-endian */
+    TEST_ASSERT_EQ(2, encoded[32]); /* ACT_BATT_VOLTAGE id */
+    TEST_ASSERT_EQ(1, encoded[35]);
+    TEST_ASSERT_EQ(ITM_SIGNAL_CEB_PITCH_MAIN_LVDT,
+                   encoded[ITM_SIGNAL_CEB_PITCH_MAIN_LVDT * 16U]);
+    TEST_ASSERT_EQ(1, encoded[ITM_SIGNAL_CEB_PITCH_MAIN_LVDT * 16U + 3U]);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_READ_ONLY, itm_canopen_ret_sdo_write(&service,
+        ITM_OD_FULL_SNAPSHOT, 0, encoded, 4));
+    now = 111;
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_FULL_SNAPSHOT, 0, encoded, sizeof(encoded), &size));
+    TEST_ASSERT_EQ(1, encoded[3]);
+    TEST_ASSERT_EQ(1, encoded[35]);
+    TEST_ASSERT_EQ(2, encoded[ITM_SIGNAL_CEB_PITCH_MAIN_LVDT * 16U + 3U]);
     return true;
 }

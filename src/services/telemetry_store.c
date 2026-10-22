@@ -24,6 +24,8 @@ static bool type_can_hold(itm_signal_type_t type, int64_t value)
         return (value >= 0) && ((uint64_t)value <= UINT32_MAX);
     case ITM_SIGNAL_TYPE_BOOL:
         return (value == 0) || (value == 1);
+    case ITM_SIGNAL_TYPE_I64:
+        return true;
     default:
         return false;
     }
@@ -66,11 +68,12 @@ bool itm_telemetry_store_init(itm_telemetry_store_t *store,
     return true;
 }
 
-itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
-                                     itm_signal_source_t producer,
-                                     itm_telemetry_key_t key,
-                                     itm_signal_type_t type, int64_t value,
-                                     uint32_t timestamp_ms)
+static itm_result_t put_value(itm_telemetry_store_t *store,
+                              itm_signal_source_t producer,
+                              itm_telemetry_key_t key,
+                              itm_signal_type_t type, int64_t value,
+                              uint32_t timestamp_ms, bool has_ceb_raw,
+                              uint16_t ceb_raw)
 {
     const itm_signal_metadata_t *metadata;
     itm_signal_runtime_t *runtime;
@@ -114,10 +117,35 @@ itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
     runtime->update_counter++;
     runtime->quality = ITM_SIGNAL_QUALITY_VALID;
     runtime->has_timestamp = true;
+    runtime->has_ceb_raw = has_ceb_raw;
+    runtime->ceb_raw = has_ceb_raw ? ceb_raw : 0U;
     store->statistics.accepted_updates++;
     store->sequence++;
     store->critical.exit(store->critical.context, state);
     return ITM_OK;
+}
+
+itm_result_t itm_telemetry_store_put(itm_telemetry_store_t *store,
+                                     itm_signal_source_t producer,
+                                     itm_telemetry_key_t key,
+                                     itm_signal_type_t type, int64_t value,
+                                     uint32_t timestamp_ms)
+{
+    return put_value(store, producer, key, type, value, timestamp_ms, false, 0U);
+}
+
+itm_result_t itm_telemetry_store_put_ceb_raw(itm_telemetry_store_t *store,
+                                             itm_signal_id_t id,
+                                             int64_t engineering_value,
+                                             uint16_t raw,
+                                             uint32_t timestamp_ms)
+{
+    if (!itm_telemetry_key_is_valid(id) ||
+        itm_telemetry_catalog[id].source != ITM_SOURCE_CEB)
+        return ITM_ERROR_INVALID_ARGUMENT;
+    return put_value(store, ITM_SOURCE_CEB, id,
+                     itm_telemetry_catalog[id].type, engineering_value,
+                     timestamp_ms, true, raw);
 }
 
 itm_result_t itm_telemetry_store_update(itm_telemetry_store_t *store,

@@ -1,6 +1,9 @@
 add_executable(itm_tests
     test_main.c
+    test_update.c
     test_battery_dbc.c
+    test_ceb_tlm.c
+    test_itm_rs422_tlm.c
     test_bc_supervisor.c
     test_cb_monitor.c
     test_canopen_ret.c
@@ -15,7 +18,7 @@ add_executable(itm_tests
     mocks/mock_ports.c
 )
 
-target_link_libraries(itm_tests PRIVATE itm_core)
+target_link_libraries(itm_tests PRIVATE itm_core itm_canopen)
 target_include_directories(itm_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(itm_tests PRIVATE c_std_11)
 

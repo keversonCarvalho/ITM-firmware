@@ -10,6 +10,9 @@ out/
 .vscode/
 .idea/
 .tools/
+third_party/
+__pycache__/
+*.pyc
 
 # OS/editor noise.
 Thumbs.db

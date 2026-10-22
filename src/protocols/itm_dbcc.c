@@ -6,6 +6,62 @@
 
 #include "battery_dbc_generated.h"
 
+/* One independent catalog entry for every DBC signal on each physical bus. */
+static const itm_signal_id_t signal_ids[2][ITM_DBCC_MESSAGE_COUNT][6] = {
+    [ITM_DBCC_BUS_BATT_28V] = {
+        [ITM_DBCC_MESSAGE_TEMPS] = {
+            ITM_SIGNAL_AV_BATT_TEMP_CELL_COUNT, ITM_SIGNAL_AV_BATT_AUX_VOLTAGE_1,
+            ITM_SIGNAL_AV_BATT_AUX_VOLTAGE_2, ITM_SIGNAL_AV_BATT_AUX_VOLTAGE_3},
+        [ITM_DBCC_MESSAGE_V_TOTAL] = {
+            ITM_SIGNAL_AV_BATT_VOLTAGE, ITM_SIGNAL_AV_BATT_CHARGER_VOLTAGE},
+        [ITM_DBCC_MESSAGE_CURRENT] = {
+            ITM_SIGNAL_AV_BATT_CURRENT_1, ITM_SIGNAL_AV_BATT_CURRENT_2},
+        [ITM_DBCC_MESSAGE_ENERGY] = {
+            ITM_SIGNAL_AV_BATT_AMPERE_HOURS, ITM_SIGNAL_AV_BATT_WATT_HOURS},
+        [ITM_DBCC_MESSAGE_CELL_VOLTAGE] = {
+            ITM_SIGNAL_AV_BATT_CELL_POINT, ITM_SIGNAL_AV_BATT_CELL_COUNT,
+            ITM_SIGNAL_AV_BATT_CELL_VOLTAGE_10, ITM_SIGNAL_AV_BATT_CELL_VOLTAGE_11,
+            ITM_SIGNAL_AV_BATT_CELL_VOLTAGE_12},
+        [ITM_DBCC_MESSAGE_BALANCE] = {
+            ITM_SIGNAL_AV_BATT_BAL_CELL_COUNT, ITM_SIGNAL_AV_BATT_BALANCE_STATE},
+        [ITM_DBCC_MESSAGE_STATUS] = {
+            ITM_SIGNAL_AV_BATT_CELL_VOLTAGE_LOW, ITM_SIGNAL_AV_BATT_CELL_VOLTAGE_HIGH,
+            ITM_SIGNAL_AV_BATT_SOC, ITM_SIGNAL_AV_BATT_SOH,
+            ITM_SIGNAL_AV_BATT_BATTERY_HIGH_TEMPERATURE,
+            ITM_SIGNAL_AV_BATT_STATUS_FLAGS},
+        [ITM_DBCC_MESSAGE_HUMIDITY] = {
+            ITM_SIGNAL_AV_BATT_TEMP_0, ITM_SIGNAL_AV_BATT_HUMIDITY,
+            ITM_SIGNAL_AV_BATT_TEMP_1},
+    },
+    [ITM_DBCC_BUS_BATT_150V] = {
+        [ITM_DBCC_MESSAGE_TEMPS] = {
+            ITM_SIGNAL_ACT_BATT_TEMP_CELL_COUNT, ITM_SIGNAL_ACT_BATT_AUX_VOLTAGE_1,
+            ITM_SIGNAL_ACT_BATT_AUX_VOLTAGE_2, ITM_SIGNAL_ACT_BATT_AUX_VOLTAGE_3},
+        [ITM_DBCC_MESSAGE_V_TOTAL] = {
+            ITM_SIGNAL_ACT_BATT_VOLTAGE, ITM_SIGNAL_ACT_BATT_CHARGER_VOLTAGE},
+        [ITM_DBCC_MESSAGE_CURRENT] = {
+            ITM_SIGNAL_ACT_BATT_CURRENT_1, ITM_SIGNAL_ACT_BATT_CURRENT_2},
+        [ITM_DBCC_MESSAGE_ENERGY] = {
+            ITM_SIGNAL_ACT_BATT_AMPERE_HOURS, ITM_SIGNAL_ACT_BATT_WATT_HOURS},
+        [ITM_DBCC_MESSAGE_CELL_VOLTAGE] = {
+            ITM_SIGNAL_ACT_BATT_CELL_POINT, ITM_SIGNAL_ACT_BATT_CELL_COUNT,
+            ITM_SIGNAL_ACT_BATT_CELL_VOLTAGE_10, ITM_SIGNAL_ACT_BATT_CELL_VOLTAGE_11,
+            ITM_SIGNAL_ACT_BATT_CELL_VOLTAGE_12},
+        [ITM_DBCC_MESSAGE_BALANCE] = {
+            ITM_SIGNAL_ACT_BATT_BAL_CELL_COUNT, ITM_SIGNAL_ACT_BATT_BALANCE_STATE},
+        [ITM_DBCC_MESSAGE_STATUS] = {
+            ITM_SIGNAL_ACT_BATT_CELL_VOLTAGE_LOW, ITM_SIGNAL_ACT_BATT_CELL_VOLTAGE_HIGH,
+            ITM_SIGNAL_ACT_BATT_SOC, ITM_SIGNAL_ACT_BATT_SOH,
+            ITM_SIGNAL_ACT_BATT_BATTERY_HIGH_TEMPERATURE,
+            ITM_SIGNAL_ACT_BATT_STATUS_FLAGS},
+        [ITM_DBCC_MESSAGE_HUMIDITY] = {
+            ITM_SIGNAL_ACT_BATT_TEMP_0, ITM_SIGNAL_ACT_BATT_HUMIDITY,
+            ITM_SIGNAL_ACT_BATT_TEMP_1},
+    },
+};
+static const uint8_t message_value_counts[ITM_DBCC_MESSAGE_COUNT] =
+    {4U, 2U, 2U, 2U, 5U, 2U, 6U, 3U};
+
 static itm_result_t float_to_milli(float value, int64_t *converted)
 {
     float scaled;
@@ -184,12 +240,12 @@ itm_result_t itm_dbcc_ingest(itm_dbcc_t *dbcc,
                              const itm_dbcc_frame_t *frame)
 {
     itm_dbcc_decoded_t decoded;
-    itm_result_t result;
+    itm_result_t result, first_error = ITM_OK;
     itm_signal_source_t source;
     itm_signal_id_t id;
-    int64_t value;
     itm_telemetry_statistics_t before;
     itm_telemetry_statistics_t after;
+    uint8_t index;
 
     if ((dbcc == NULL) || (frame == NULL) || (dbcc->telemetry == NULL))
         return ITM_ERROR_INVALID_ARGUMENT;
@@ -215,26 +271,26 @@ itm_result_t itm_dbcc_ingest(itm_dbcc_t *dbcc,
         return result;
     }
     dbcc->statistics.frames_decoded++;
-    if ((decoded.message != ITM_DBCC_MESSAGE_V_TOTAL) &&
-        (decoded.message != ITM_DBCC_MESSAGE_STATUS)) return ITM_OK;
+    if (decoded.message >= ITM_DBCC_MESSAGE_COUNT ||
+        decoded.value_count != message_value_counts[decoded.message])
+        return ITM_ERROR_CORRUPT;
     source = frame->bus == ITM_DBCC_BUS_BATT_28V ? ITM_SOURCE_AV_BATT
                                                   : ITM_SOURCE_ACT_BATT;
-    id = decoded.message == ITM_DBCC_MESSAGE_V_TOTAL
-             ? (source == ITM_SOURCE_AV_BATT ? ITM_SIGNAL_AV_BATT_VOLTAGE
-                                             : ITM_SIGNAL_ACT_BATT_VOLTAGE)
-             : (source == ITM_SOURCE_AV_BATT ? ITM_SIGNAL_AV_BATT_SOC
-                                             : ITM_SIGNAL_ACT_BATT_SOC);
-    value = decoded.message == ITM_DBCC_MESSAGE_V_TOTAL ? decoded.values[0]
-                                                        : decoded.values[2];
     before = itm_telemetry_store_statistics(dbcc->telemetry);
-    result = itm_telemetry_store_update(dbcc->telemetry, source, id,
-                                        ITM_SIGNAL_TYPE_U32, value,
-                                        frame->timestamp_ms);
+    for (index = 0U; index < decoded.value_count; ++index) {
+        id = signal_ids[frame->bus][decoded.message][index];
+        if (!itm_telemetry_key_is_valid(id) || itm_telemetry_catalog[id].source != source)
+            return ITM_ERROR_CORRUPT;
+        result = itm_telemetry_store_update(dbcc->telemetry, source, id,
+                                            itm_telemetry_catalog[id].type,
+                                            decoded.values[index], frame->timestamp_ms);
+        if (result != ITM_OK && first_error == ITM_OK) first_error = result;
+    }
     after = itm_telemetry_store_statistics(dbcc->telemetry);
     dbcc->statistics.invalid_value += after.rejected_range - before.rejected_range;
     dbcc->statistics.out_of_order_timestamp +=
         after.rejected_timestamp - before.rejected_timestamp;
-    return result;
+    return first_error;
 }
 
 itm_dbcc_statistics_t itm_dbcc_statistics(const itm_dbcc_t *dbcc)

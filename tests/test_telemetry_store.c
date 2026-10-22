@@ -87,27 +87,27 @@ bool test_telemetry_timestamp_and_quality_transitions(void)
     itm_signal_runtime_t value;
 
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
-                               &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_STATE,
-                               ITM_SIGNAL_TYPE_BOOL, 1, 100U));
+                               &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                               ITM_SIGNAL_TYPE_U32, 1, 100U));
     TEST_ASSERT_EQ(ITM_ERROR_INVALID_ARGUMENT,
                    itm_telemetry_store_update(
-                       &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_STATE,
-                       ITM_SIGNAL_TYPE_BOOL, 0, 99U));
+                       &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                       ITM_SIGNAL_TYPE_U32, 0, 99U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_read(
-                               &store, ITM_SIGNAL_CB_STATE, 201U, &value));
+                               &store, ITM_SIGNAL_CEB_HEALTH, 201U, &value));
     TEST_ASSERT_EQ(ITM_SIGNAL_QUALITY_STALE, value.quality);
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
-                               &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_STATE,
-                               ITM_SIGNAL_TYPE_BOOL, 0, 202U));
+                               &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                               ITM_SIGNAL_TYPE_U32, 0, 202U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_invalidate(
-                               &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_STATE,
+                               &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
                                203U));
     TEST_ASSERT_EQ(ITM_ERROR_INVALID_ARGUMENT,
                    itm_telemetry_store_update(
-                       &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_STATE,
-                       ITM_SIGNAL_TYPE_BOOL, 1, 202U));
+                       &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                       ITM_SIGNAL_TYPE_U32, 1, 202U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_read(
-                               &store, ITM_SIGNAL_CB_STATE, 203U, &value));
+                               &store, ITM_SIGNAL_CEB_HEALTH, 203U, &value));
     TEST_ASSERT_EQ(ITM_SIGNAL_QUALITY_INVALID, value.quality);
     return true;
 }
@@ -124,7 +124,7 @@ bool test_telemetry_snapshot_consistency_and_producer_isolation(void)
                                ITM_SIGNAL_TYPE_U32, 7550, 20U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
                                &store, ITM_SOURCE_CEB,
-                               ITM_SIGNAL_CEB_TEMPERATURE,
+                               ITM_SIGNAL_CEB_PITCH_ACTUATOR_TEMPERATURE,
                                ITM_SIGNAL_TYPE_I32, 4200, 20U));
     TEST_ASSERT_EQ(ITM_ERROR_INVALID_ARGUMENT,
                    itm_telemetry_store_update(
@@ -134,7 +134,7 @@ bool test_telemetry_snapshot_consistency_and_producer_isolation(void)
                    itm_telemetry_store_snapshot(&store, 20U, &snapshot));
     TEST_ASSERT_EQ(7550, snapshot.values[ITM_SIGNAL_AV_BATT_SOC].value);
     TEST_ASSERT_EQ(4200,
-                   snapshot.values[ITM_SIGNAL_CEB_TEMPERATURE].value);
+                   snapshot.values[ITM_SIGNAL_CEB_PITCH_ACTUATOR_TEMPERATURE].value);
     TEST_ASSERT_EQ(store.sequence, snapshot.sequence);
     TEST_ASSERT_EQ(1U,
                    itm_telemetry_store_statistics(&store).rejected_source);
@@ -148,15 +148,15 @@ bool test_telemetry_counter_and_timestamp_wraparound(void)
     itm_telemetry_store_t store = create_store(&critical);
     itm_signal_runtime_t value;
 
-    store.values[ITM_SIGNAL_CB_FAULT].update_counter = UINT32_MAX;
+    store.values[ITM_SIGNAL_CEB_HEALTH].update_counter = UINT32_MAX;
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
-                               &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_FAULT,
-                               ITM_SIGNAL_TYPE_BOOL, 0, UINT32_MAX - 2U));
+                               &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                               ITM_SIGNAL_TYPE_U32, 0, UINT32_MAX - 2U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_update(
-                               &store, ITM_SOURCE_CB, ITM_SIGNAL_CB_FAULT,
-                               ITM_SIGNAL_TYPE_BOOL, 1, 2U));
+                               &store, ITM_SOURCE_CEB, ITM_SIGNAL_CEB_HEALTH,
+                               ITM_SIGNAL_TYPE_U32, 1, 2U));
     TEST_ASSERT_EQ(ITM_OK, itm_telemetry_store_read(
-                               &store, ITM_SIGNAL_CB_FAULT, 2U, &value));
+                               &store, ITM_SIGNAL_CEB_HEALTH, 2U, &value));
     TEST_ASSERT_EQ(1U, value.update_counter);
     TEST_ASSERT_EQ(2U, value.timestamp_ms);
     return true;
@@ -202,7 +202,8 @@ bool test_telemetry_static_memory_budget(void)
     printf("  RAM sizes (host): store=%zu snapshot=%zu ring=%zu catalog=%zu\n",
            sizeof(itm_telemetry_store_t), sizeof(itm_telemetry_snapshot_t),
            sizeof(itm_telemetry_ring_t), sizeof(itm_telemetry_catalog));
-    TEST_ASSERT(sizeof(itm_telemetry_store_t) < 2048U);
-    TEST_ASSERT(sizeof(itm_telemetry_snapshot_t) < 1024U);
+    TEST_ASSERT_EQ(71U, ITM_SIGNAL_COUNT);
+    TEST_ASSERT(sizeof(itm_telemetry_store_t) < 4096U);
+    TEST_ASSERT(sizeof(itm_telemetry_snapshot_t) < 2048U);
     return true;
 }

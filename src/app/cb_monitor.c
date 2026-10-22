@@ -19,7 +19,7 @@ bool itm_cb_monitor_init(itm_cb_monitor_t *monitor,
 {
     if ((monitor == NULL) || (config == NULL) ||
         (config->low_max_mv >= config->high_min_mv) ||
-        (config->stable_samples_required == 0U)) {
+        (config->debounce_ms == 0U)) {
         return false;
     }
 
@@ -28,20 +28,20 @@ bool itm_cb_monitor_init(itm_cb_monitor_t *monitor,
     monitor->candidate_em2 = ITM_CB_SIGNAL_INDETERMINATE;
     monitor->stable_em1 = ITM_CB_SIGNAL_INDETERMINATE;
     monitor->stable_em2 = ITM_CB_SIGNAL_INDETERMINATE;
-    monitor->stable_count = 0U;
+    monitor->candidate_since_ms = 0U;
     monitor->has_stable_sample = false;
+    monitor->condition = ITM_CB_CONDITION_PENDING;
     return true;
 }
 
 itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
                                               uint16_t em1_mv,
                                               uint16_t em2_mv,
-                                              bool commanded_on)
+                                              bool commanded_on,
+                                              uint32_t now_ms)
 {
     itm_cb_signal_t em1;
     itm_cb_signal_t em2;
-    bool expected_em1;
-    bool expected_em2;
 
     if (monitor == NULL) {
         return ITM_CB_MONITOR_INVALID;
@@ -51,8 +51,10 @@ itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
     em2 = classify(&monitor->config, em2_mv);
     if ((em1 == ITM_CB_SIGNAL_INDETERMINATE) ||
         (em2 == ITM_CB_SIGNAL_INDETERMINATE)) {
-        monitor->stable_count = 0U;
+        monitor->candidate_em1 = ITM_CB_SIGNAL_INDETERMINATE;
+        monitor->candidate_em2 = ITM_CB_SIGNAL_INDETERMINATE;
         monitor->has_stable_sample = false;
+        monitor->condition = ITM_CB_CONDITION_INVALID;
         return ITM_CB_MONITOR_INVALID;
     }
 
@@ -60,25 +62,29 @@ itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
         (em2 != monitor->candidate_em2)) {
         monitor->candidate_em1 = em1;
         monitor->candidate_em2 = em2;
-        monitor->stable_count = 1U;
-    } else if (monitor->stable_count < monitor->config.stable_samples_required) {
-        monitor->stable_count++;
+        monitor->candidate_since_ms = now_ms;
+        monitor->has_stable_sample = false;
+        monitor->condition = ITM_CB_CONDITION_PENDING;
     }
 
-    if (monitor->stable_count < monitor->config.stable_samples_required) {
+    if ((uint32_t)(now_ms - monitor->candidate_since_ms) <
+        monitor->config.debounce_ms) {
         return ITM_CB_MONITOR_PENDING;
     }
 
     monitor->stable_em1 = em1;
     monitor->stable_em2 = em2;
     monitor->has_stable_sample = true;
-    expected_em1 = commanded_on ? monitor->config.expected_em1_when_on
-                                : monitor->config.expected_em1_when_off;
-    expected_em2 = commanded_on ? monitor->config.expected_em2_when_on
-                                : monitor->config.expected_em2_when_off;
-
-    return (((em1 == ITM_CB_SIGNAL_HIGH) == expected_em1) &&
-            ((em2 == ITM_CB_SIGNAL_HIGH) == expected_em2))
-               ? ITM_CB_MONITOR_MATCH
-               : ITM_CB_MONITOR_MISMATCH;
+    if (em1 == ITM_CB_SIGNAL_LOW)
+        monitor->condition = em2 == ITM_CB_SIGNAL_LOW
+            ? ITM_CB_CONDITION_BATTERY_DISCONNECTED
+            : ITM_CB_CONDITION_MONITOR_FAULT;
+    else if (commanded_on)
+        monitor->condition = em2 == ITM_CB_SIGNAL_HIGH
+            ? ITM_CB_CONDITION_NORMAL : ITM_CB_CONDITION_STUCK_OFF;
+    else
+        monitor->condition = em2 == ITM_CB_SIGNAL_LOW
+            ? ITM_CB_CONDITION_NORMAL : ITM_CB_CONDITION_STUCK_ON;
+    return monitor->condition == ITM_CB_CONDITION_NORMAL
+        ? ITM_CB_MONITOR_MATCH : ITM_CB_MONITOR_MISMATCH;
 }

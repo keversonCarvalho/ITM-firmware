@@ -16,7 +16,7 @@ material de referencia.
 - Persistencia abstrata em dois slots com CRC-32 e commit transacional.
 - Servico CANopen RET com identidade CiA 301, Vendor-ID Concert Space,
   configuracao por SDO e persistencia do Node-ID.
-- EDS inicial do ITM-100 preparado para geracao estatica pela Lely `dcf2c`.
+- EDS inicial do ITM-100 convertido em descritores estaticos para N7 Space.
 - Registro estatico de telemetria com catalogo, qualidade, freshness, snapshots
   consistentes, normalizacao inteira e ring buffers de capacidade fixa.
 - DBCC de baterias gerado do `Battery.dbc` com `cantools`, wrapper portatil,
@@ -28,8 +28,21 @@ material de referencia.
 
 Os parsers BC/CEB e o mapeamento PDO da RET nao foram implementados porque seus
 ICDs ainda nao estao definidos. O DBCC BMS esta parcial e ainda depende da
-validacao das ambiguidades do DBC e dos parametros fisicos da CAN. Lely Core foi selecionada para CANopen,
-mas o port STM32/FDCAN ainda depende da versao e configuracao embarcada da pilha.
+validacao das ambiguidades do DBC e dos parametros fisicos da CAN. N7 Space ECSS v3.5.0 esta
+integrada com adaptador FDCAN e bootloader A/B de bancada. A qualificacao de voo permanece pendente.
+
+O codigo de terceiros nao e versionado neste repositorio. Antes de compilar,
+obtenha a revisao fixada da N7 Space e confira os arquivos usados pelo build:
+
+```powershell
+New-Item -ItemType Directory -Force third_party | Out-Null
+git clone https://gitlab.com/n7space/canopen/lely-core.git third_party/n7space
+git -C third_party/n7space checkout 33f62875479028c11907340a88ec9596828bb20b
+python tools/verify_n7space_source.py
+```
+
+O commit, a lista de arquivos e o digest estao em
+`config/n7space-upstream.json` e `config/n7space-files.txt`.
 
 ## DBCC Das Baterias
 
@@ -86,14 +99,17 @@ ctest --test-dir build --output-on-failure
 Como alternativa no ambiente atual, a suite foi compilada com GCC 11.4 no WSL,
 usando `-Wall -Wextra -Wpedantic -Werror`. Os 24 testes passaram.
 
-Quando `dcf2c` da Lely estiver instalado, o CMake disponibiliza o alvo opcional
-que gera o Object Dictionary C estatico:
+O dicionario estatico N7 Space e gerado a partir do EDS:
 
 ```powershell
-cmake --build build --target itm_lely_od
+python tools/generate_n7space_od.py
 ```
 
 ## Documentos De Projeto
+
+- [Atualizacao CANopen N7 Space e XCP de bancada](docs/12-atualizacao-can-n7space-xcp.md)
+- [Journal compartilhado de boot e configuracao](docs/13-journal-configuracao.md)
+- [Consulta e configuracao do OD por SDO](docs/14-consulta-od-sdo.md)
 
 - [Visao do projeto](docs/01-visao-do-projeto.md)
 - [Requisitos iniciais](docs/02-requisitos-iniciais.md)
