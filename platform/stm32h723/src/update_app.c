@@ -3,11 +3,17 @@
 #include "itm_stm32_ports.h"
 #include "itm/protocols/n7space.h"
 #include "itm/protocols/ceb_tlm.h"
+#ifndef ITM_BC_PPP_XRCE
 #include "itm/protocols/itm_rs422_tlm.h"
+#endif
 #include "itm/app/power_control.h"
 #include "itm/app/cb_monitor.h"
 #include "itm/app/cb_voltage.h"
 #include "itm/services/diagnostics.h"
+#include "itm/services/power_authority.h"
+#ifdef ITM_BC_PPP_XRCE
+#include "itm_bc_network.h"
+#endif
 #include <string.h>
 
 static itm_fw_update_t fw;
@@ -15,35 +21,41 @@ static itm_canopen_ret_t service;
 static itm_telemetry_store_t telemetry;
 static itm_dbcc_t battery_decoder;
 static itm_ceb_tlm_t ceb_decoder;
+#ifndef ITM_BC_PPP_XRCE
 static itm_telemetry_snapshot_t bc_snapshot;
 static uint8_t bc_frame[ITM_RS422_TLM_FRAME_SIZE];
 static uint16_t bc_frame_counter;
 static uint32_t bc_last_frame_ms;
+#endif
 static itm_power_control_t power;
 static itm_cb_monitor_t cb_monitor;
 static itm_diagnostics_t power_diagnostics;
-static uint8_t bench_request;
-static uint32_t bench_last_command_ms;
+static itm_power_authority_t power_authority;
 static uint32_t cb_last_sample_ms;
 static uint32_t em1_mv = UINT32_MAX, em2_mv = UINT32_MAX;
-static uint16_t cb_actuation_limit_ms = 50U;
-static bool cb_confirmed_on;
-#define ITM_BENCH_COMMAND_LEASE_MS 1000U
+static uint32_t em1_adc_raw = UINT32_MAX, em2_adc_raw = UINT32_MAX;
+static uint16_t cb_status_delay_ms = 50U;
+static uint32_t cb_condition_for_bc;
 #define ITM_BENCH_VREF_MV 3300U
+#ifndef ITM_BENCH_POWER_SDO_ENABLED
+#define ITM_BENCH_POWER_SDO_ENABLED 1
+#endif
 
 static bool power_bench_read(void *context, uint16_t index, uint32_t *value)
 {
     (void)context;
     if (!value) return false;
     switch (index) {
-    case ITM_OD_BENCH_POWER_COMMAND: *value = bench_request; break;
+    case ITM_OD_BENCH_POWER_COMMAND: *value = (uint32_t)power_authority.request; break;
     case ITM_OD_BENCH_POWER_STATE: *value = (uint32_t)power.state; break;
     case ITM_OD_BENCH_DEBOUNCE_MS: *value = cb_monitor.config.debounce_ms; break;
-    case ITM_OD_BENCH_CEB_DELAY_MS: *value = power.config.ceb_start_timeout_ms; break;
-    case ITM_OD_BENCH_CB_TIMEOUT_MS: *value = cb_actuation_limit_ms; break;
+    case ITM_OD_BENCH_CEB_DELAY_MS: *value = power.config.ceb_status_delay_ms; break;
+    case ITM_OD_BENCH_CB_TIMEOUT_MS: *value = cb_status_delay_ms; break;
     case ITM_OD_BENCH_EM1_MV: *value = em1_mv; break;
     case ITM_OD_BENCH_EM2_MV: *value = em2_mv; break;
     case ITM_OD_BENCH_CB_CONDITION: *value = (uint32_t)cb_monitor.condition; break;
+    case ITM_OD_BENCH_EM1_ADC_RAW: *value = em1_adc_raw; break;
+    case ITM_OD_BENCH_EM2_ADC_RAW: *value = em2_adc_raw; break;
     default: return false;
     }
     return true;
@@ -53,35 +65,37 @@ static itm_sdo_abort_t power_bench_write(void *context, uint16_t index,
                                           uint32_t value)
 {
     const uint32_t now = HAL_GetTick();
+    itm_bench_accept_t accepted;
     (void)context;
     if (index == ITM_OD_BENCH_POWER_COMMAND) {
-        if (value > ITM_POWER_REQUEST_SYSTEM_ON) return ITM_SDO_ABORT_VALUE_RANGE;
-        if (value != 0U && power.state == ITM_POWER_FAULT)
+        if (value > ITM_POWER_REQUEST_CB_ONLY) return ITM_SDO_ABORT_VALUE_RANGE;
+        accepted = itm_power_authority_bench(&power_authority,
+            (itm_power_request_t)value, now, power.state == ITM_POWER_FAULT);
+        if (accepted == ITM_BENCH_DISABLED)
+            return ITM_SDO_ABORT_UNSUPPORTED_ACCESS;
+        if (accepted != ITM_BENCH_ACCEPTED)
             return ITM_SDO_ABORT_HARDWARE;
-        bench_request = (uint8_t)value;
-        bench_last_command_ms = now;
         if (value == 0U && power.state == ITM_POWER_FAULT) {
             const itm_power_inputs_t safe = {.commands_allowed = true};
             itm_diagnostics_clear_blocking_fault(&power_diagnostics);
             /* A fresh explicit command is required after clearing the fault. */
             (void)itm_power_control_clear_fault(&power, now, &safe);
         }
-        itm_power_control_request(&power, (itm_power_request_t)value);
         return ITM_SDO_ABORT_NONE;
     }
     if (value < 1U || value > 5000U) return ITM_SDO_ABORT_VALUE_RANGE;
-    if (bench_request != 0U || power.state != ITM_POWER_OFF)
+    if (power_authority.request != ITM_POWER_REQUEST_OFF ||
+        power.state != ITM_POWER_OFF)
         return ITM_SDO_ABORT_HARDWARE;
     switch (index) {
     case ITM_OD_BENCH_DEBOUNCE_MS:
         cb_monitor.config.debounce_ms = (uint16_t)value;
-        power.config.cb_start_timeout_ms = value + cb_actuation_limit_ms;
         break;
     case ITM_OD_BENCH_CEB_DELAY_MS:
-        power.config.ceb_start_timeout_ms = value; break;
+        power.config.ceb_status_delay_ms = value; break;
     case ITM_OD_BENCH_CB_TIMEOUT_MS:
-        cb_actuation_limit_ms = (uint16_t)value;
-        power.config.cb_start_timeout_ms = value + cb_monitor.config.debounce_ms;
+        cb_status_delay_ms = (uint16_t)value;
+        power.config.cb_status_delay_ms = value;
         break;
     default: return ITM_SDO_ABORT_OBJECT_NOT_FOUND;
     }
@@ -91,44 +105,66 @@ static itm_sdo_abort_t power_bench_write(void *context, uint16_t index,
 static void power_bench_poll(uint32_t now)
 {
     itm_power_inputs_t inputs = {0};
-    uint16_t raw1, raw2, voltage1, voltage2;
-    if (bench_request != 0U &&
-        (uint32_t)(now - bench_last_command_ms) >= ITM_BENCH_COMMAND_LEASE_MS) {
-        bench_request = 0U;
-        itm_power_control_request(&power, ITM_POWER_REQUEST_OFF);
+    uint16_t raw1 = 0U, raw2 = 0U, voltage1 = 0U, voltage2 = 0U;
+    uint8_t adc_valid;
+    bool em1_valid, em2_valid;
+#ifdef ITM_BC_PPP_XRCE
+    itm_bc_event_t event;
+    while (itm_bc_network_take_event(&event)) {
+        if (event.kind == ITM_BC_EVENT_SESSION_STARTED)
+            itm_power_authority_session_started(&power_authority,
+                                                 event.session_id, now);
+        else if (event.kind == ITM_BC_EVENT_SESSION_LOST)
+            itm_power_authority_session_lost(&power_authority, now);
+        else if (event.kind == ITM_BC_EVENT_COMMAND)
+            itm_power_authority_command(&power_authority, &event.command, now,
+                                         power_diagnostics.blocking_fault);
+        else
+            itm_power_authority_malformed(&power_authority);
     }
+#endif
+    itm_power_authority_tick(&power_authority, now);
+    itm_power_control_request(&power, power_authority.request);
+    inputs.commands_allowed = true;
+    inputs.blocking_fault = power_diagnostics.blocking_fault;
+    /* EM1/EM2 are diagnostic only; neither gates nor trips the outputs. */
+    itm_power_control_tick(&power, now, &inputs, &power_diagnostics);
     if ((uint32_t)(now - cb_last_sample_ms) >= 5U) {
         cb_last_sample_ms = now;
-        if (itm_update_cb_adc_read(&raw1, &raw2) &&
-            itm_cb_voltage_from_adc(raw1, ITM_BENCH_VREF_MV, &voltage1) &&
-            itm_cb_voltage_from_adc(raw2, ITM_BENCH_VREF_MV, &voltage2)) {
-            em1_mv = voltage1;
-            em2_mv = voltage2;
+        adc_valid = itm_update_cb_adc_read(&raw1, &raw2);
+        em1_adc_raw = (adc_valid & 1U) ? raw1 : UINT32_MAX;
+        em2_adc_raw = (adc_valid & 2U) ? raw2 : UINT32_MAX;
+        em1_valid = (adc_valid & 1U) &&
+            itm_cb_voltage_from_adc(raw1, ITM_BENCH_VREF_MV, &voltage1);
+        em2_valid = (adc_valid & 2U) &&
+            itm_cb_voltage_from_adc(raw2, ITM_BENCH_VREF_MV, &voltage2);
+        em1_mv = em1_valid ? voltage1 : UINT32_MAX;
+        em2_mv = em2_valid ? voltage2 : UINT32_MAX;
+        if (em1_valid && em2_valid) {
             (void)itm_cb_monitor_sample(&cb_monitor, voltage1, voltage2,
                                         power.cb_commanded, now);
-            if (cb_monitor.has_stable_sample)
-                cb_confirmed_on = power.cb_commanded &&
-                    cb_monitor.condition == ITM_CB_CONDITION_NORMAL;
         } else {
-            em1_mv = UINT32_MAX;
-            em2_mv = UINT32_MAX;
-            cb_monitor.condition = ITM_CB_CONDITION_INVALID;
-            cb_monitor.has_stable_sample = false;
-            cb_confirmed_on = false;
+            itm_cb_monitor_invalidate(&cb_monitor);
+        }
+        __atomic_store_n(&cb_condition_for_bc, (uint32_t)cb_monitor.condition,
+                         __ATOMIC_RELAXED);
+    }
+    itm_power_authority_observe(&power_authority, &power);
+#ifdef ITM_BC_PPP_XRCE
+    {
+        static itm_dds_power_status_t previous;
+        static bool have_previous;
+        itm_dds_power_status_t status;
+        itm_power_authority_status(&power_authority, &power,
+            (uint8_t)cb_monitor.condition, em1_mv, em2_mv, &status);
+        if (power_authority.status_dirty || !have_previous ||
+            memcmp(&previous, &status, sizeof(status)) != 0) {
+            (void)itm_bc_network_submit_status(&status);
+            previous = status; have_previous = true;
+            power_authority.status_dirty = false;
         }
     }
-    inputs.commands_allowed = true; /* Bench SDO is the only command source. */
-    inputs.blocking_fault = power_diagnostics.blocking_fault;
-    /* No independent CEB power-good input is connected in this bench build.
-     * This is only a startup delay, never a claim of voltage confirmation. */
-    inputs.ceb_power_good = power.state == ITM_POWER_CEB_STARTING &&
-        (uint32_t)(now - power.state_entered_ms) >=
-        power.config.ceb_start_timeout_ms;
-    inputs.cb_feedback_valid = cb_monitor.has_stable_sample ||
-        (power.state == ITM_POWER_OPERATIONAL &&
-         cb_monitor.condition == ITM_CB_CONDITION_PENDING);
-    inputs.cb_is_on = cb_confirmed_on;
-    itm_power_control_tick(&power, now, &inputs, &power_diagnostics);
+#endif
 }
 static uint32_t telemetry_now(void *context)
 {
@@ -243,10 +279,12 @@ void itm_update_app_init(void)
         !itm_dbcc_init(&battery_decoder, &telemetry) ||
         !itm_fw_init(&fw, itm_update_flash_port())) for (;;) {}
     itm_diagnostics_init(&power_diagnostics);
+    itm_power_authority_init(&power_authority,
+                             ITM_BENCH_POWER_SDO_ENABLED != 0);
     if (!itm_cb_monitor_init(&cb_monitor,
-            &(const itm_cb_monitor_config_t){5600U, 6700U, 50U}) ||
+            &(const itm_cb_monitor_config_t){7304U, 7305U, 40U}) ||
         !itm_power_control_init(&power,
-            &(const itm_power_config_t){50U, 100U, 50U},
+            &(const itm_power_config_t){50U, 50U, 50U},
             itm_stm32_mfet2_port(), itm_stm32_mfet1_port(), HAL_GetTick()))
         for (;;) {}
     config = (itm_canopen_persistent_config_t){
@@ -268,7 +306,9 @@ void itm_update_app_init(void)
                                            power_bench_write, NULL) ||
         !itm_n7space_init(itm_update_can_port(), &service)) for (;;) {}
     itm_n7space_allow_update(true);
+#ifndef ITM_BC_PPP_XRCE
     bc_last_frame_ms = HAL_GetTick();
+#endif
     boot_confirmed = fw.confirmed == ITM_APP_SLOT;
     itm_n7space_set_boot_info(ITM_APP_SLOT, image_version, boot_confirmed);
 }
@@ -307,6 +347,7 @@ void itm_update_app_poll(void)
         for (budget = 0; budget < 256 && itm_update_ceb_uart_read(&byte); ++budget)
             itm_ceb_tlm_ingest_byte(&ceb_decoder, byte, now);
     }
+#ifndef ITM_BC_PPP_XRCE
     if ((uint32_t)(now - bc_last_frame_ms) >= ITM_RS422_TLM_PERIOD_MS) {
         bc_last_frame_ms = now;
         if (itm_update_bc_uart_idle() &&
@@ -316,17 +357,28 @@ void itm_update_app_poll(void)
             itm_update_bc_uart_send(bc_frame, sizeof(bc_frame)))
             ++bc_frame_counter;
     }
+#endif
     if (itm_n7space_tick(now) != ITM_OK) for (;;) {} /* Watchdog recovery. */
     if (itm_n7space_take_update_request()) {
         itm_board_force_safe_outputs(); reset_pending = true; reset_since = now;
     }
     if (reset_pending && (itm_update_can_tx_idle() || now - reset_since > 1000)) NVIC_SystemReset();
-    /* Bench acceptance: initialized CANopen and sustained event loop for 2 s.
-     * Replace with mission health criteria before flight. */
-    if (!boot_confirmed && now >= 2000) {
+    /* Bench acceptance requires a running application and CANopen for 2 s.
+     * An absent BC must not block independent analog-input testing. */
+    if (!boot_confirmed && now >= 2000U) {
         if (!itm_fw_confirm(&fw, ITM_APP_SLOT)) for (;;) {}
         boot_confirmed = true;
         itm_n7space_set_boot_info(ITM_APP_SLOT, image_version, true);
     }
     itm_update_watchdog_feed();
+}
+
+itm_result_t itm_update_app_snapshot(itm_telemetry_snapshot_t *snapshot)
+{
+    return itm_telemetry_store_snapshot(&telemetry, HAL_GetTick(), snapshot);
+}
+
+uint8_t itm_update_app_cb_condition(void)
+{
+    return (uint8_t)__atomic_load_n(&cb_condition_for_bc, __ATOMIC_RELAXED);
 }

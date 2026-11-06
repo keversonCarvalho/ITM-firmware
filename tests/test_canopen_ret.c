@@ -25,6 +25,45 @@ static itm_canopen_ret_t create_service(mock_flash_t *flash,
     return service;
 }
 
+static bool mock_power_adc_read(void *context, uint16_t index, uint32_t *value)
+{
+    (void)context;
+    if (index == ITM_OD_BENCH_EM1_ADC_RAW) *value = 43424U;
+    else if (index == ITM_OD_BENCH_EM2_ADC_RAW) *value = UINT32_MAX;
+    else return false;
+    return true;
+}
+
+static itm_sdo_abort_t mock_power_adc_write(void *context, uint16_t index,
+                                            uint32_t value)
+{
+    (void)context;
+    (void)index;
+    (void)value;
+    return ITM_SDO_ABORT_NONE;
+}
+
+bool test_canopen_exposes_raw_adc_read_only(void)
+{
+    mock_flash_t flash;
+    itm_persistence_t persistence;
+    itm_canopen_ret_t service = create_service(&flash, &persistence);
+    uint32_t value = 0U;
+    size_t size = 0U;
+    TEST_ASSERT(itm_canopen_ret_bind_power_bench(&service,
+        mock_power_adc_read, mock_power_adc_write, NULL));
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_BENCH_EM1_ADC_RAW, 0U, (uint8_t *)&value, sizeof(value), &size));
+    TEST_ASSERT_EQ(sizeof(value), size);
+    TEST_ASSERT_EQ(43424U, value);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_NONE, itm_canopen_ret_sdo_read(&service,
+        ITM_OD_BENCH_EM2_ADC_RAW, 0U, (uint8_t *)&value, sizeof(value), &size));
+    TEST_ASSERT_EQ(UINT32_MAX, value);
+    TEST_ASSERT_EQ(ITM_SDO_ABORT_READ_ONLY, itm_canopen_ret_sdo_write(&service,
+        ITM_OD_BENCH_EM1_ADC_RAW, 0U, (const uint8_t *)&value, sizeof(value)));
+    return true;
+}
+
 bool test_canopen_identity_uses_registered_vendor_id(void)
 {
     mock_flash_t flash;

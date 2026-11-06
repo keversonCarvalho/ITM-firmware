@@ -58,9 +58,12 @@ add_library(itm_core STATIC
     src/protocols/itm_dbcc.c
     src/protocols/ceb_tlm.c
     src/protocols/itm_rs422_tlm.c
+    src/protocols/itm_dds_snapshot.c
+    src/protocols/itm_dds_power.c
     src/services/bc_supervisor.c
     src/services/canopen_ret.c
     src/services/diagnostics.c
+    src/services/power_authority.c
     src/services/persistence.c
     src/services/firmware_update.c
     src/protocols/xcp_update.c

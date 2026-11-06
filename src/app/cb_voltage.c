@@ -6,7 +6,9 @@ bool itm_cb_voltage_from_adc(uint16_t raw, uint16_t vref_mv,
     const uint32_t delta = raw >= 32768U ? (uint32_t)raw - 32768U : 0U;
     uint64_t input_uv;
     uint64_t voltage_uv;
-    if (!monitor_mv || vref_mv == 0U || raw < 32768U) return false;
+    if (!monitor_mv || vref_mv == 0U || raw < 32128U) return false;
+    /* Small negative zero offsets are valid zero-voltage measurements.
+     * 640 ADC counts correspond to about 0.30 V at the monitored input. */
     /* 16-bit differential ADC: zero at midscale, span +/-VREF. */
     input_uv = ((uint64_t)delta * 2U * vref_mv * 1000U + 32767U) / 65535U;
     if (input_uv > 2000000U) return false;

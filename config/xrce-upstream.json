@@ -1,0 +1,16 @@
+{
+  "microxrcedds_client": {
+    "upstream": "https://github.com/eProsima/Micro-XRCE-DDS-Client",
+    "tag": "v3.0.0",
+    "commit": "9e05a62f3352ce5bf1cec0d2b518391179213ce6",
+    "selected_files": 128,
+    "sha256": "948f68ff1c303bf122b10f9b3fbe25875f980fbbdd44b8a0f3b7237159f9f70a"
+  },
+  "microcdr": {
+    "upstream": "https://github.com/eProsima/Micro-CDR",
+    "tag": "v2.0.1",
+    "commit": "3d1b17703c7cf4f22def2910bc845bdb5152d7b5",
+    "selected_files": 10,
+    "sha256": "062a1d1ce3b908e1c75a1ce956948ee93ea2cb9a3dc2c94fcd81df73181f64db"
+  }
+}

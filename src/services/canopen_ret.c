@@ -326,7 +326,9 @@ itm_sdo_abort_t itm_canopen_ret_sdo_read(const itm_canopen_ret_t *service,
     case ITM_OD_BENCH_CB_TIMEOUT_MS:
     case ITM_OD_BENCH_EM1_MV:
     case ITM_OD_BENCH_EM2_MV:
-    case ITM_OD_BENCH_CB_CONDITION: {
+    case ITM_OD_BENCH_CB_CONDITION:
+    case ITM_OD_BENCH_EM1_ADC_RAW:
+    case ITM_OD_BENCH_EM2_ADC_RAW: {
         uint32_t value;
         size_t width = sizeof(value);
         if (subindex != 0U) return ITM_SDO_ABORT_SUBINDEX_NOT_FOUND;
@@ -435,6 +437,8 @@ itm_sdo_abort_t itm_canopen_ret_sdo_write(itm_canopen_ret_t *service,
     case ITM_OD_BENCH_EM1_MV:
     case ITM_OD_BENCH_EM2_MV:
     case ITM_OD_BENCH_CB_CONDITION:
+    case ITM_OD_BENCH_EM1_ADC_RAW:
+    case ITM_OD_BENCH_EM2_ADC_RAW:
         return ITM_SDO_ABORT_READ_ONLY;
     default:
         return ITM_SDO_ABORT_OBJECT_NOT_FOUND;

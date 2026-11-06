@@ -1,7 +1,6 @@
 #include "itm_update_platform.h"
 #include "itm_board.h"
 #include "battery_dbc_generated.h"
-#include "itm/protocols/itm_rs422_tlm.h"
 #include <string.h>
 
 static FDCAN_HandleTypeDef fdcan;
@@ -10,6 +9,21 @@ static UART_HandleTypeDef ceb_uart;
 static UART_HandleTypeDef bc_uart;
 static ADC_HandleTypeDef cb_adc;
 static ADC_ChannelConfTypeDef cb_adc_channel;
+static RNG_HandleTypeDef random_generator;
+
+bool itm_update_random_u32(uint32_t *value)
+{
+    static bool initialized;
+    if (!value) return false;
+    if (!initialized) {
+        __HAL_RCC_RNG_CLK_ENABLE();
+        random_generator.Instance = RNG;
+        random_generator.Init.ClockErrorDetection = RNG_CED_ENABLE;
+        if (HAL_RNG_Init(&random_generator) != HAL_OK) return false;
+        initialized = true;
+    }
+    return HAL_RNG_GenerateRandomNumber(&random_generator, value) == HAL_OK;
+}
 
 bool itm_update_cb_adc_init(void)
 {
@@ -64,16 +78,20 @@ static bool cb_adc_sample(uint32_t channel, uint16_t *raw)
     return HAL_ADC_Stop(&cb_adc) == HAL_OK;
 }
 
-bool itm_update_cb_adc_read(uint16_t *em1_raw, uint16_t *em2_raw)
+uint8_t itm_update_cb_adc_read(uint16_t *em1_raw, uint16_t *em2_raw)
 {
-    return em1_raw && em2_raw &&
-        cb_adc_sample(ADC_CHANNEL_3, em1_raw) &&
-        cb_adc_sample(ADC_CHANNEL_4, em2_raw);
+    uint8_t valid = 0U;
+    if (!em1_raw || !em2_raw) return 0U;
+    if (cb_adc_sample(ADC_CHANNEL_3, em1_raw)) valid |= 1U;
+    if (cb_adc_sample(ADC_CHANNEL_4, em2_raw)) valid |= 2U;
+    return valid;
 }
-#define BC_TX_FRAME_SIZE ITM_RS422_TLM_FRAME_SIZE
-static uint8_t bc_tx_frame[BC_TX_FRAME_SIZE];
-static volatile uint16_t bc_tx_offset;
-static volatile uint16_t bc_tx_length;
+#define BC_UART_RING_SIZE 4096U
+static volatile uint8_t bc_tx_ring[BC_UART_RING_SIZE];
+static volatile uint8_t bc_rx_ring[BC_UART_RING_SIZE];
+static volatile uint16_t bc_tx_head, bc_tx_tail;
+static volatile uint16_t bc_rx_head, bc_rx_tail;
+static volatile uint32_t bc_uart_errors;
 static volatile bool bc_tx_busy;
 #define CEB_RX_RING_SIZE 512U
 static volatile uint8_t ceb_rx_ring[CEB_RX_RING_SIZE];
@@ -187,9 +205,13 @@ bool itm_update_bc_uart_init(void)
         HAL_UARTEx_SetTxFifoThreshold(&bc_uart,
                                      UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
         return false;
-    bc_tx_offset = 0U;
-    bc_tx_length = 0U;
+    bc_tx_head = bc_tx_tail = bc_rx_head = bc_rx_tail = 0U;
+    bc_uart_errors = 0U;
     bc_tx_busy = false;
+    UART7->ICR = USART_ICR_ORECF | USART_ICR_FECF |
+                 USART_ICR_NECF | USART_ICR_PECF;
+    UART7->CR3 |= USART_CR3_EIE;
+    UART7->CR1 |= USART_CR1_RXNEIE_RXFNEIE;
     NVIC_SetPriority(UART7_IRQn, 6);
     NVIC_EnableIRQ(UART7_IRQn);
     return true;
@@ -197,12 +219,28 @@ bool itm_update_bc_uart_init(void)
 
 bool itm_update_bc_uart_idle(void) { return !bc_tx_busy; }
 
+bool itm_update_bc_uart_read(uint8_t *byte)
+{
+    const uint16_t tail = bc_rx_tail;
+    if (!byte || tail == bc_rx_head) return false;
+    *byte = bc_rx_ring[tail];
+    bc_rx_tail = (uint16_t)((tail + 1U) & (BC_UART_RING_SIZE - 1U));
+    return true;
+}
+uint32_t itm_update_bc_uart_errors(void) { return bc_uart_errors; }
+
 bool itm_update_bc_uart_send(const uint8_t *frame, size_t length)
 {
-    if (!frame || length != BC_TX_FRAME_SIZE || bc_tx_busy) return false;
-    memcpy(bc_tx_frame, frame, length);
-    bc_tx_offset = 0U;
-    bc_tx_length = (uint16_t)length;
+    size_t i;
+    if (!frame || length == 0U || length >= BC_UART_RING_SIZE) return false;
+    if (length > (BC_UART_RING_SIZE - 1U) -
+        ((bc_tx_head - bc_tx_tail) & (BC_UART_RING_SIZE - 1U)))
+        return false;
+    for (i = 0U; i < length; ++i) {
+        bc_tx_ring[bc_tx_head] = frame[i];
+        __DMB();
+        bc_tx_head = (uint16_t)((bc_tx_head + 1U) & (BC_UART_RING_SIZE - 1U));
+    }
     bc_tx_busy = true;
     UART7->ICR = USART_ICR_TCCF;
     UART7->CR3 |= USART_CR3_TXFTIE;
@@ -211,12 +249,27 @@ bool itm_update_bc_uart_send(const uint8_t *frame, size_t length)
 
 void UART7_IRQHandler(void)
 {
+    if (UART7->ISR & (USART_ISR_ORE | USART_ISR_FE | USART_ISR_NE | USART_ISR_PE)) {
+        ++bc_uart_errors;
+        UART7->ICR = USART_ICR_ORECF | USART_ICR_FECF |
+                     USART_ICR_NECF | USART_ICR_PECF;
+    }
+    while (UART7->ISR & USART_ISR_RXNE_RXFNE) {
+        const uint8_t byte = (uint8_t)UART7->RDR;
+        const uint16_t next = (uint16_t)((bc_rx_head + 1U) &
+                                         (BC_UART_RING_SIZE - 1U));
+        if (next == bc_rx_tail) ++bc_uart_errors;
+        else { bc_rx_ring[bc_rx_head] = byte; bc_rx_head = next; }
+    }
     if ((UART7->CR3 & USART_CR3_TXFTIE) != 0U &&
         (UART7->ISR & USART_ISR_TXFT) != 0U) {
         while ((UART7->ISR & USART_ISR_TXE_TXFNF) != 0U &&
-               bc_tx_offset < bc_tx_length)
-            UART7->TDR = bc_tx_frame[bc_tx_offset++];
-        if (bc_tx_offset == bc_tx_length) {
+               bc_tx_tail != bc_tx_head) {
+            UART7->TDR = bc_tx_ring[bc_tx_tail];
+            bc_tx_tail = (uint16_t)((bc_tx_tail + 1U) &
+                                     (BC_UART_RING_SIZE - 1U));
+        }
+        if (bc_tx_tail == bc_tx_head) {
             UART7->CR3 &= ~USART_CR3_TXFTIE;
             UART7->CR1 |= USART_CR1_TCIE;
         }
@@ -225,7 +278,7 @@ void UART7_IRQHandler(void)
         (UART7->ISR & USART_ISR_TC) != 0U) {
         UART7->CR1 &= ~USART_CR1_TCIE;
         UART7->ICR = USART_ICR_TCCF;
-        bc_tx_busy = false;
+        if (bc_tx_tail == bc_tx_head) bc_tx_busy = false;
     }
 }
 static const uint32_t battery_ids[] = {

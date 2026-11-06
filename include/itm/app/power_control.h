@@ -14,25 +14,24 @@ typedef enum {
     ITM_POWER_CB_STARTING,
     ITM_POWER_OPERATIONAL,
     ITM_POWER_STOPPING,
-    ITM_POWER_FAULT
+    ITM_POWER_FAULT,
+    ITM_POWER_CB_ON
 } itm_power_state_t;
 
 typedef enum {
     ITM_POWER_REQUEST_OFF = 0,
     ITM_POWER_REQUEST_CEB_ONLY,
-    ITM_POWER_REQUEST_SYSTEM_ON
+    ITM_POWER_REQUEST_SYSTEM_ON,
+    ITM_POWER_REQUEST_CB_ONLY
 } itm_power_request_t;
 
 typedef struct {
-    uint32_t ceb_start_timeout_ms;
-    uint32_t cb_start_timeout_ms;
-    uint32_t shutdown_settle_ms;
+    uint32_t ceb_status_delay_ms;
+    uint32_t cb_status_delay_ms;
+    uint32_t off_status_delay_ms;
 } itm_power_config_t;
 
 typedef struct {
-    bool ceb_power_good;
-    bool cb_feedback_valid;
-    bool cb_is_on;
     bool commands_allowed;
     bool blocking_fault;
 } itm_power_inputs_t;

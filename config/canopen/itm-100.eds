@@ -53,7 +53,7 @@ SupportedObjects=4
 4=0x1017
 
 [ManufacturerObjects]
-SupportedObjects=22
+SupportedObjects=24
 1=0x2100
 2=0x2101
 3=0x2102
@@ -76,6 +76,8 @@ SupportedObjects=22
 20=0x2125
 21=0x2126
 22=0x2127
+23=0x2128
+24=0x2129
 
 [2104]
 ParameterName=Running image slot (0=A,1=B)
@@ -358,9 +360,9 @@ AccessType=ro
 DefaultValue=
 PDOMapping=0
 
-; Bench-only power control. Values are volatile and reset to off/50 ms.
+; Bench-only power control. Values are volatile; CB feedback defaults to 40 ms.
 [2120]
-ParameterName=Bench power request (0=off,1=CEB,2=CEB+CB; renew within 1 s)
+ParameterName=Bench power request (0=off,1=CEB only,2=both,3=CB only; renew within 1 s)
 ObjectType=0x7
 DataType=0x0005
 AccessType=rw
@@ -380,7 +382,7 @@ ParameterName=CB feedback debounce in milliseconds (volatile)
 ObjectType=0x7
 DataType=0x0006
 AccessType=rw
-DefaultValue=50
+DefaultValue=40
 PDOMapping=0
 
 [2123]
@@ -392,7 +394,7 @@ DefaultValue=50
 PDOMapping=0
 
 [2124]
-ParameterName=CB feedback timeout in milliseconds (volatile)
+ParameterName=CB status settling delay in milliseconds (volatile; no feedback gate)
 ObjectType=0x7
 DataType=0x0006
 AccessType=rw
@@ -421,4 +423,20 @@ ObjectType=0x7
 DataType=0x0005
 AccessType=ro
 DefaultValue=0
+PDOMapping=0
+
+[2128]
+ParameterName=EM1 raw 16-bit differential ADC code (0xFFFFFFFF if conversion failed)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0xFFFFFFFF
+PDOMapping=0
+
+[2129]
+ParameterName=EM2 raw 16-bit differential ADC code (0xFFFFFFFF if conversion failed)
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0xFFFFFFFF
 PDOMapping=0

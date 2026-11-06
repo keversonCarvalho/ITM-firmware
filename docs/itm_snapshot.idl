@@ -1,0 +1,113 @@
+// Provisional BC DDS contract. Topic: ITM_Snapshot_v2.
+// Signal fields follow the telemetry catalog, excluding CEB_FRAME_COUNTER.
+// quality contains four 2-bit states per byte, MSB first: 0=no sample,
+// 1=valid, 2=stale; final four bits are zero.
+// Battery fields use integer engineering units defined in the ITM ICD.
+// CEB fields use original unsigned 16-bit counts from the CEB serial ICD.
+module itm {
+  module telemetry {
+    struct SnapshotV2 {
+      unsigned short sequence;
+      octet quality[18];
+      unsigned short av_batt_voltage;
+      unsigned short av_batt_soc;
+      unsigned long act_batt_voltage;
+      unsigned short act_batt_soc;
+      unsigned short av_batt_temp_cell_count;
+      unsigned short av_batt_aux_voltage_1;
+      unsigned short av_batt_aux_voltage_2;
+      unsigned short av_batt_aux_voltage_3;
+      long long av_batt_charger_voltage;
+      long av_batt_current_1;
+      long av_batt_current_2;
+      long av_batt_ampere_hours;
+      long av_batt_watt_hours;
+      unsigned short av_batt_cell_point;
+      unsigned short av_batt_cell_count;
+      unsigned short av_batt_cell_voltage_10;
+      unsigned short av_batt_cell_voltage_11;
+      unsigned short av_batt_cell_voltage_12;
+      short av_batt_bal_cell_count;
+      long long av_batt_balance_state;
+      unsigned short av_batt_cell_voltage_low;
+      unsigned short av_batt_cell_voltage_high;
+      unsigned short av_batt_soh;
+      unsigned short av_batt_battery_high_temperature;
+      unsigned short av_batt_status_flags;
+      unsigned short av_batt_temp_0;
+      unsigned short av_batt_humidity;
+      unsigned short av_batt_temp_1;
+      unsigned short act_batt_temp_cell_count;
+      unsigned short act_batt_aux_voltage_1;
+      unsigned short act_batt_aux_voltage_2;
+      unsigned short act_batt_aux_voltage_3;
+      long long act_batt_charger_voltage;
+      long act_batt_current_1;
+      long act_batt_current_2;
+      long act_batt_ampere_hours;
+      long act_batt_watt_hours;
+      unsigned short act_batt_cell_point;
+      unsigned short act_batt_cell_count;
+      unsigned short act_batt_cell_voltage_10;
+      unsigned short act_batt_cell_voltage_11;
+      unsigned short act_batt_cell_voltage_12;
+      short act_batt_bal_cell_count;
+      long long act_batt_balance_state;
+      unsigned short act_batt_cell_voltage_low;
+      unsigned short act_batt_cell_voltage_high;
+      unsigned short act_batt_soh;
+      unsigned short act_batt_battery_high_temperature;
+      unsigned short act_batt_status_flags;
+      unsigned short act_batt_temp_0;
+      unsigned short act_batt_humidity;
+      unsigned short act_batt_temp_1;
+      unsigned short ceb_pitch_main_lvdt;
+      unsigned short ceb_pitch_mirror_lvdt;
+      unsigned short ceb_yaw_main_lvdt;
+      unsigned short ceb_yaw_mirror_lvdt;
+      unsigned short ceb_pitch_current;
+      unsigned short ceb_yaw_current;
+      unsigned short ceb_pitch_actuator_temperature;
+      unsigned short ceb_yaw_actuator_temperature;
+      unsigned short ceb_pitch_driver_temperature;
+      unsigned short ceb_yaw_driver_temperature;
+      unsigned short ceb_battery_150v_voltage;
+      unsigned short ceb_supply_28v_voltage;
+      unsigned short ceb_pitch_command;
+      unsigned short ceb_yaw_command;
+      unsigned short ceb_pitch_position;
+      unsigned short ceb_yaw_position;
+      unsigned short ceb_health;
+      unsigned short ceb_can_health;
+      // CB condition after 40 ms of stable feedback. Values: 0 pending,
+      // 1 normal, 2 ACT_BATT disconnected, 3 monitor fault,
+      // 4 contactor stuck on, 5 stuck off, 6 invalid ADC/transition.
+      octet cb_condition;
+    };
+  };
+
+  module power {
+    struct Command {
+      unsigned long long session_id;
+      unsigned long command_id;
+      boolean ceb_on;
+      boolean cb_on;
+    };
+
+    struct Status {
+      unsigned long long session_id;
+      unsigned long command_id;
+      octet result;
+      octet power_state;
+      boolean ceb_requested;
+      boolean cb_requested;
+      boolean ceb_output_on;
+      boolean cb_output_on;
+      octet cb_condition;
+      boolean em1_valid;
+      boolean em2_valid;
+      unsigned long em1_mv;
+      unsigned long em2_mv;
+    };
+  };
+};

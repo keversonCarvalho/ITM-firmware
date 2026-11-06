@@ -4,6 +4,9 @@ add_executable(itm_tests
     test_battery_dbc.c
     test_ceb_tlm.c
     test_itm_rs422_tlm.c
+    test_itm_dds_snapshot.c
+    test_itm_dds_power.c
+    test_power_authority.c
     test_bc_supervisor.c
     test_cb_monitor.c
     test_canopen_ret.c

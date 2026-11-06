@@ -21,12 +21,19 @@ bool test_ceb_tlm_decodes_full_snapshot(void);
 bool test_ceb_tlm_rejects_corruption_and_resynchronizes(void);
 bool test_itm_rs422_tlm_complete_frame(void);
 bool test_itm_rs422_tlm_rejects_bad_values(void);
+bool test_itm_dds_snapshot_contract(void);
+bool test_itm_dds_power_cdr_contract(void);
+bool test_itm_dds_power_rejects_malformed_command(void);
+bool test_power_authority_prioritizes_bc_and_expires(void);
+bool test_power_authority_rejects_stale_and_can_disable_bench(void);
 bool test_bc_supervisor_recovers_on_valid_frame(void);
 bool test_cb_monitor_debounces_and_matches_expected_state(void);
 bool test_cb_monitor_reports_indeterminate_voltage(void);
 bool test_cb_monitor_truth_table(void);
+bool test_cb_monitor_invalid_sample_resets_debounce(void);
 bool test_cb_voltage_nominal_scale_and_linear_limit(void);
 bool test_canopen_identity_uses_registered_vendor_id(void);
+bool test_canopen_exposes_raw_adc_read_only(void);
 bool test_canopen_uses_itm_default_node_id(void);
 bool test_canopen_rejects_identity_write(void);
 bool test_canopen_persists_node_id_on_save_command(void);
@@ -92,6 +99,16 @@ int main(void)
                              test_itm_rs422_tlm_complete_frame);
     failures += itm_run_test("RS-422 rejects invalid values",
                              test_itm_rs422_tlm_rejects_bad_values);
+    failures += itm_run_test("DDS snapshot CDR contract",
+                             test_itm_dds_snapshot_contract);
+    failures += itm_run_test("DDS power CDR contract",
+                             test_itm_dds_power_cdr_contract);
+    failures += itm_run_test("DDS power malformed command",
+                             test_itm_dds_power_rejects_malformed_command);
+    failures += itm_run_test("DDS power BC priority and lease",
+                             test_power_authority_prioritizes_bc_and_expires);
+    failures += itm_run_test("DDS power bench disable and stale commands",
+                             test_power_authority_rejects_stale_and_can_disable_bench);
     failures += itm_run_test("CEB serial CRC and resynchronization",
                              test_ceb_tlm_rejects_corruption_and_resynchronizes);
     failures += itm_run_test("BC trips after attempts",
@@ -104,10 +121,14 @@ int main(void)
                              test_cb_monitor_reports_indeterminate_voltage);
     failures += itm_run_test("CB eight logic combinations",
                              test_cb_monitor_truth_table);
+    failures += itm_run_test("CB invalid sample resets debounce",
+                             test_cb_monitor_invalid_sample_resets_debounce);
     failures += itm_run_test("CB ADC nominal scaling and limit",
                              test_cb_voltage_nominal_scale_and_linear_limit);
     failures += itm_run_test("CANopen registered vendor identity",
                              test_canopen_identity_uses_registered_vendor_id);
+    failures += itm_run_test("CANopen raw ADC diagnostic is read-only",
+                             test_canopen_exposes_raw_adc_read_only);
     failures += itm_run_test("CANopen ITM default node-ID",
                              test_canopen_uses_itm_default_node_id);
     failures += itm_run_test("CANopen identity is read-only",

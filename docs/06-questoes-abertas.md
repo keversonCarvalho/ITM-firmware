@@ -7,9 +7,9 @@ fornecidos por configuracao de teste e nao promovidos para o alvo sem revisao.
 
 - Existem ICDs formais do Banco de Controle, CEB/Skyroot, BMS, Contactor Box e RET/CANopen?
 - Existem esquematicos eletricos, pinout CN1-CN4 e lista de sinais?
-- Qual documento define a tabela verdade oficial de EM1/EM2 para CB ligado,
-  desligado e em falha? Afeta `app/cb_monitor` e REQ-ITM10/37/38/39/59. A
-  decisao provisoria e injetar a tabela esperada por configuracao.
+- A tabela verdade de EM1/EM2 fornecida para a integração do CB está
+  implementada. Falta validar em bancada o limiar fixo de 7,304 V e os
+  40 ms de estabilização após comando ou mudança das entradas.
 
 ## Hardware
 

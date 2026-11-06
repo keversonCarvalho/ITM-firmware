@@ -39,8 +39,9 @@ bool itm_power_control_init(itm_power_control_t *control,
 
     if ((control == NULL) || (config == NULL) ||
         (ceb_output.write == NULL) || (cb_output.write == NULL) ||
-        (config->ceb_start_timeout_ms == 0U) ||
-        (config->cb_start_timeout_ms == 0U)) {
+        (config->ceb_status_delay_ms == 0U) ||
+        (config->cb_status_delay_ms == 0U) ||
+        (config->off_status_delay_ms == 0U)) {
         return false;
     }
 
@@ -70,106 +71,68 @@ void itm_power_control_tick(itm_power_control_t *control, uint32_t now_ms,
                             const itm_power_inputs_t *inputs,
                             itm_diagnostics_t *diagnostics)
 {
-    const uint32_t elapsed = (control != NULL)
-                                 ? now_ms - control->state_entered_ms
-                                 : 0U;
+    bool ceb_on;
+    bool cb_on;
+    bool changed = false;
+    uint32_t settle_ms;
+    itm_power_state_t settled_state;
 
     if ((control == NULL) || (inputs == NULL)) {
         return;
     }
 
+    if (control->state == ITM_POWER_FAULT) {
+        return;
+    }
     if ((!inputs->commands_allowed || inputs->blocking_fault) &&
-        (control->state != ITM_POWER_OFF) &&
-        (control->state != ITM_POWER_FAULT)) {
+        (control->ceb_commanded || control->cb_commanded)) {
         enter_fault(control, now_ms, ITM_DIAG_BC_LINK_LOST, diagnostics);
         return;
     }
-
-    switch (control->state) {
-    case ITM_POWER_OFF:
-        if ((control->request != ITM_POWER_REQUEST_OFF) &&
-            inputs->commands_allowed && !inputs->blocking_fault) {
-            if (!set_output(&control->ceb_output, true)) {
-                enter_fault(control, now_ms, ITM_DIAG_OUTPUT_WRITE_FAILED,
-                            diagnostics);
-                break;
-            }
-            control->ceb_commanded = true;
-            enter_state(control, ITM_POWER_CEB_STARTING, now_ms);
-        }
-        break;
-
-    case ITM_POWER_CEB_STARTING:
-        if (control->request == ITM_POWER_REQUEST_OFF) {
-            enter_state(control, ITM_POWER_STOPPING, now_ms);
-        } else if (inputs->ceb_power_good) {
-            enter_state(control, ITM_POWER_CEB_ON, now_ms);
-        } else if (elapsed >= control->config.ceb_start_timeout_ms) {
-            enter_fault(control, now_ms, ITM_DIAG_POWER_TRANSITION_TIMEOUT,
+    if (!inputs->commands_allowed || inputs->blocking_fault) {
+        return;
+    }
+    ceb_on = control->request == ITM_POWER_REQUEST_CEB_ONLY ||
+             control->request == ITM_POWER_REQUEST_SYSTEM_ON;
+    cb_on = control->request == ITM_POWER_REQUEST_CB_ONLY ||
+            control->request == ITM_POWER_REQUEST_SYSTEM_ON;
+    if (control->cb_commanded != cb_on) {
+        if (!set_output(&control->cb_output, cb_on)) {
+            enter_fault(control, now_ms, ITM_DIAG_OUTPUT_WRITE_FAILED,
                         diagnostics);
+            return;
         }
-        break;
-
-    case ITM_POWER_CEB_ON:
-        if (control->request == ITM_POWER_REQUEST_OFF) {
-            enter_state(control, ITM_POWER_STOPPING, now_ms);
-        } else if (control->request == ITM_POWER_REQUEST_SYSTEM_ON) {
-            if (!set_output(&control->cb_output, true)) {
-                enter_fault(control, now_ms, ITM_DIAG_OUTPUT_WRITE_FAILED,
-                            diagnostics);
-                break;
-            }
-            control->cb_commanded = true;
-            enter_state(control, ITM_POWER_CB_STARTING, now_ms);
-        }
-        break;
-
-    case ITM_POWER_CB_STARTING:
-        if (control->request != ITM_POWER_REQUEST_SYSTEM_ON) {
-            (void)set_output(&control->cb_output, false);
-            control->cb_commanded = false;
-            enter_state(control, ITM_POWER_CEB_ON, now_ms);
-        } else if (inputs->cb_feedback_valid && inputs->cb_is_on) {
-            enter_state(control, ITM_POWER_OPERATIONAL, now_ms);
-        } else if (elapsed >= control->config.cb_start_timeout_ms) {
-            enter_fault(control, now_ms, ITM_DIAG_POWER_TRANSITION_TIMEOUT,
+        control->cb_commanded = cb_on;
+        changed = true;
+    }
+    if (control->ceb_commanded != ceb_on) {
+        if (!set_output(&control->ceb_output, ceb_on)) {
+            enter_fault(control, now_ms, ITM_DIAG_OUTPUT_WRITE_FAILED,
                         diagnostics);
+            return;
         }
-        break;
-
-    case ITM_POWER_OPERATIONAL:
-        if (control->request != ITM_POWER_REQUEST_SYSTEM_ON) {
-            (void)set_output(&control->cb_output, false);
-            control->cb_commanded = false;
-            enter_state(control, (control->request == ITM_POWER_REQUEST_OFF)
-                                     ? ITM_POWER_STOPPING
-                                     : ITM_POWER_CEB_ON,
-                        now_ms);
-        } else if (!inputs->cb_feedback_valid || !inputs->cb_is_on) {
-            enter_fault(control, now_ms, ITM_DIAG_CB_STATE_MISMATCH,
-                        diagnostics);
-        }
-        break;
-
-    case ITM_POWER_STOPPING:
-        if (control->cb_commanded) {
-            (void)set_output(&control->cb_output, false);
-            control->cb_commanded = false;
-            control->state_entered_ms = now_ms;
-        } else if (elapsed >= control->config.shutdown_settle_ms) {
-            if (!set_output(&control->ceb_output, false)) {
-                enter_fault(control, now_ms, ITM_DIAG_OUTPUT_WRITE_FAILED,
-                            diagnostics);
-                break;
-            }
-            control->ceb_commanded = false;
-            enter_state(control, ITM_POWER_OFF, now_ms);
-        }
-        break;
-
-    case ITM_POWER_FAULT:
-    default:
-        break;
+        control->ceb_commanded = ceb_on;
+        changed = true;
+    }
+    if (changed) {
+        enter_state(control, !ceb_on && !cb_on ? ITM_POWER_STOPPING :
+                    cb_on ? ITM_POWER_CB_STARTING : ITM_POWER_CEB_STARTING,
+                    now_ms);
+    }
+    settled_state = !ceb_on && !cb_on ? ITM_POWER_OFF :
+                    ceb_on && cb_on ? ITM_POWER_OPERATIONAL :
+                    ceb_on ? ITM_POWER_CEB_ON : ITM_POWER_CB_ON;
+    settle_ms = !ceb_on && !cb_on ? control->config.off_status_delay_ms :
+                ceb_on && cb_on ?
+                    (control->config.ceb_status_delay_ms >
+                     control->config.cb_status_delay_ms ?
+                     control->config.ceb_status_delay_ms :
+                     control->config.cb_status_delay_ms) :
+                cb_on ? control->config.cb_status_delay_ms :
+                        control->config.ceb_status_delay_ms;
+    if (control->state != settled_state &&
+        (uint32_t)(now_ms - control->state_entered_ms) >= settle_ms) {
+        enter_state(control, settled_state, now_ms);
     }
 }
 

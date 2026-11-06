@@ -14,7 +14,7 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | `protocols/itm_dbcc` | REQ-ITM 15, 25, 40 | Todos os IDs/DLCs, ID estendido, IEEE-754 invalido, vetores independentes, isolamento das baterias, timestamp e estatisticas. |
 | `services/ceb` | REQ-ITM 26, 27 | Parser RS-485, telemetria CEB, comandos Skyroot, erros de CRC, timeouts e comandos nao permitidos. |
 | `services/bc` | REQ-ITM 28, 29, 30, 31 | Parser RS-422, comandos de SSR, comandos de teste, perda de comunicacao, 3 tentativas e desligamento seguro. |
-| `app/power_control` | REQ-ITM 8, 9, 29, 31, 35, 36 | Sequenciamento CEB/CB, falhas de SSR, desligamento em falha, intertravamentos e eventos. |
+| `app/power_control` | REQ-ITM 8, 9, 29, 31, 35, 36 | Comandos independentes CEB/CB, desligamento por perda de permissao ou falha de escrita e eventos. |
 | `app/cb_monitor` | REQ-ITM10, 37, 38, 39, 59 | Conversao ADC para booleano, zona indeterminada, debounce, tabela verdade de falhas e diagnosticos. |
 | `app/telemetry_router` | REQ-ITM 15, 25, 26, 34, 40 | Agregacao CEB/BMS, validade, publicacao CANopen/RET, frequencia 100 Hz quando aplicavel. |
 | `app/diagnostics` | REQ-ITM 31, 39, 60, 61, 67, 68, 70 | Eventos de falha, contadores, FMEA inicial, estados seguros e evidencias para ensaios. |
@@ -28,8 +28,8 @@ Esta matriz e o ponto de partida para desenvolvimento assistido por IA. Ela nao 
 | --- | --- | --- | --- |
 | `ports/*` | Parcial no alvo | Contratos C; relogio, secao critica e GPIO no STM32; stubs de ADC/FDCAN/UART/flash | Drivers funcionais, DMA, IRQ e ensaios na placa |
 | `services/bc_supervisor` | Parcial | Testes aprovados de perda, bloqueio e recuperacao | Semantica e temporizacao oficiais das 3 tentativas |
-| `app/cb_monitor` | Parcial | Testes aprovados de limiar, zona indeterminada, debounce e tabela configuravel | Tabela verdade oficial e periodo de amostragem |
-| `app/power_control` | Parcial | Testes aprovados de sequenciamento e perda de permissao | Estados seguros, intertravamentos, realimentacoes e tempos oficiais |
+| `app/cb_monitor` | Parcial | Oito linhas da tabela verdade, limiar provisório de 7,304 V e 40 ms após comando ou mudança de EM1/EM2 testados no host | Validar limiar e tempos na placa sob cargas reais |
+| `app/power_control` | Parcial | Testes de CEB somente, CB somente, ambas, OFF e perda de permissao | Ensaios fisicos das quatro combinacoes e politica operacional definitiva |
 | `services/diagnostics` | Parcial | Teste aprovado de fila circular e falha bloqueante | Catalogo, severidades, persistencia e politica de limpeza oficiais |
 | `services/persistence` | Parcial | Testes aprovados de duas geracoes e gravacao interrompida | Layout de flash, defaults, migracao e ensaio real de power-fail |
 | Protocolo BMS/DBCC | Parcial | DBC auditado, codec C gerado, wrapper portatil e testes de host | Validar ambiguidades do DBC, bitrate, filtros, periodos e vetores oficiais |

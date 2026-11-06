@@ -5,10 +5,10 @@
 static itm_cb_signal_t classify(const itm_cb_monitor_config_t *config,
                                 uint16_t voltage_mv)
 {
-    if (voltage_mv < config->low_max_mv) {
+    if (voltage_mv <= config->low_max_mv) {
         return ITM_CB_SIGNAL_LOW;
     }
-    if (voltage_mv > config->high_min_mv) {
+    if (voltage_mv >= config->high_min_mv) {
         return ITM_CB_SIGNAL_HIGH;
     }
     return ITM_CB_SIGNAL_INDETERMINATE;
@@ -28,10 +28,20 @@ bool itm_cb_monitor_init(itm_cb_monitor_t *monitor,
     monitor->candidate_em2 = ITM_CB_SIGNAL_INDETERMINATE;
     monitor->stable_em1 = ITM_CB_SIGNAL_INDETERMINATE;
     monitor->stable_em2 = ITM_CB_SIGNAL_INDETERMINATE;
+    monitor->candidate_commanded_on = false;
     monitor->candidate_since_ms = 0U;
     monitor->has_stable_sample = false;
     monitor->condition = ITM_CB_CONDITION_PENDING;
     return true;
+}
+
+void itm_cb_monitor_invalidate(itm_cb_monitor_t *monitor)
+{
+    if (monitor == NULL) return;
+    monitor->candidate_em1 = ITM_CB_SIGNAL_INDETERMINATE;
+    monitor->candidate_em2 = ITM_CB_SIGNAL_INDETERMINATE;
+    monitor->has_stable_sample = false;
+    monitor->condition = ITM_CB_CONDITION_INVALID;
 }
 
 itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
@@ -51,15 +61,14 @@ itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
     em2 = classify(&monitor->config, em2_mv);
     if ((em1 == ITM_CB_SIGNAL_INDETERMINATE) ||
         (em2 == ITM_CB_SIGNAL_INDETERMINATE)) {
-        monitor->candidate_em1 = ITM_CB_SIGNAL_INDETERMINATE;
-        monitor->candidate_em2 = ITM_CB_SIGNAL_INDETERMINATE;
-        monitor->has_stable_sample = false;
-        monitor->condition = ITM_CB_CONDITION_INVALID;
+        itm_cb_monitor_invalidate(monitor);
         return ITM_CB_MONITOR_INVALID;
     }
 
-    if ((em1 != monitor->candidate_em1) ||
+    if ((commanded_on != monitor->candidate_commanded_on) ||
+        (em1 != monitor->candidate_em1) ||
         (em2 != monitor->candidate_em2)) {
+        monitor->candidate_commanded_on = commanded_on;
         monitor->candidate_em1 = em1;
         monitor->candidate_em2 = em2;
         monitor->candidate_since_ms = now_ms;

@@ -10,6 +10,7 @@
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
+#define HAL_RNG_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 
 #ifndef HSE_VALUE
@@ -39,6 +40,7 @@
 #include "stm32h7xx_hal_flash.h"
 #include "stm32h7xx_hal_fdcan.h"
 #include "stm32h7xx_hal_pwr.h"
+#include "stm32h7xx_hal_rng.h"
 #include "stm32h7xx_hal_uart.h"
 
 #ifdef USE_FULL_ASSERT

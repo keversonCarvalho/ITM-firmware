@@ -73,13 +73,14 @@ Em especial, comandos externos do BC so devem acionar SSRs apos validacao de pro
 
 ### Controle De Alimentacao
 
-Responsavel por comandos fisicos e intertravamentos:
+Responsavel pelos comandos fisicos independentes e pelo estado seguro:
 
 - Acionamento da alimentacao da CE Box em 28 V.
 - Acionamento da Contactor Box para 150 V.
-- Sequenciamento de ligamento/desligamento.
-- Confirmacao do CB por duas entradas analogicas convertidas para `EM1` e `EM2`.
-- Debounce e tabela verdade de deteccao de erro do CB.
+- Selecao independente de CEB somente, CB somente, ambos ou nenhum.
+- Monitoramento diagnostico do CB por duas entradas analogicas `EM1` e `EM2`,
+  sem intertravamento das saidas.
+- Debounce e tabela verdade de diagnostico do CB.
 - Retorno a estado seguro em falha.
 
 ### Servico De Comandos RS-422
@@ -188,6 +189,15 @@ Recomendacao inicial:
 - Para telemetria operacional, publicar valor ja convertido em unidade de engenharia.
 - Para diagnostico, permitir acesso ao valor bruto.
 - Registrar unidade, escala, offset, origem, timestamp e validade em um contrato unico de telemetria.
+
+## Implementação atual do enlace BC
+
+A decisão de outubro de 2026 substitui o quadro serial direto da UART7 por
+PPP/lwIP e Micro XRCE-DDS sobre TCP para o Agent no Banco de Controle.
+O contrato e o estado de validação estão em
+[`16-enlace-bc-ppp-xrce.md`](16-enlace-bc-ppp-xrce.md). As seções anteriores
+que descrevem um protocolo serial BC direto registram a proposta antiga e
+não descrevem a saída UART7 do build de atualização atual.
 
 ## Concorrencia E RTOS
 

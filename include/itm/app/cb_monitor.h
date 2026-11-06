@@ -39,6 +39,7 @@ typedef struct {
     itm_cb_signal_t candidate_em2;
     itm_cb_signal_t stable_em1;
     itm_cb_signal_t stable_em2;
+    bool candidate_commanded_on;
     uint32_t candidate_since_ms;
     bool has_stable_sample;
     itm_cb_condition_t condition;
@@ -46,6 +47,7 @@ typedef struct {
 
 bool itm_cb_monitor_init(itm_cb_monitor_t *monitor,
                          const itm_cb_monitor_config_t *config);
+void itm_cb_monitor_invalidate(itm_cb_monitor_t *monitor);
 itm_cb_monitor_status_t itm_cb_monitor_sample(itm_cb_monitor_t *monitor,
                                               uint16_t em1_mv,
                                               uint16_t em2_mv,

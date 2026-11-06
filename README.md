@@ -2,10 +2,9 @@
 
 Projeto de firmware do ITM-100, Interface de Tubeira Movel, usado para integrar o Sistema de Tubeira Movel ao Banco de Controle e a Rede de Telemetria.
 
-O repositorio contem um nucleo portatil em C11 para desenvolver e testar as
-regras do equipamento antes da integracao com STM32, FreeRTOS e protocolos
-reais. Requisitos, arquitetura, decisoes e testes permanecem rastreaveis ao
-material de referencia.
+O repositorio contem o nucleo portatil em C11, o firmware STM32H723 e os
+protocolos de bancada. Requisitos, arquitetura, decisoes e testes permanecem
+rastreaveis ao material de referencia.
 
 ## Estado Atual
 
@@ -23,13 +22,14 @@ material de referencia.
   separacao entre as redes de 28 V e 150 V e testes de host.
 - Contratos abstratos para relogio, saidas, flash, CAN, UART e protocolos.
 - Testes de host e mocks de hardware.
-- Alvo bare-metal STM32H723VGT6 com clock inicial de 8 MHz, GPIOs seguros,
-  adaptadores basicos e artefatos ELF/BIN/HEX.
+- Alvo STM32H723VGT6 com FreeRTOS no build de atualizacao, lwIP PPP na UART7
+  e cliente Micro XRCE-DDS sobre TCP para o Agent do Banco de Controle.
 
-Os parsers BC/CEB e o mapeamento PDO da RET nao foram implementados porque seus
-ICDs ainda nao estao definidos. O DBCC BMS esta parcial e ainda depende da
-validacao das ambiguidades do DBC e dos parametros fisicos da CAN. N7 Space ECSS v3.5.0 esta
-integrada com adaptador FDCAN e bootloader A/B de bancada. A qualificacao de voo permanece pendente.
+O enlace PPP/XRCE do BC foi compilado para os slots A/B, mas ainda nao foi
+testado com o Agent nem gravado na placa. Veja
+[`docs/16-enlace-bc-ppp-xrce.md`](docs/16-enlace-bc-ppp-xrce.md) e o ICD
+revisado. N7 Space ECSS v3.5.0 permanece integrada com o adaptador FDCAN e
+bootloader A/B de bancada. A qualificacao de voo permanece pendente.
 
 O codigo-fonte da N7 Space utilizado pelo firmware esta preservado em
 `third_party/n7space`. O build usa a revisao fixada e uma selecao explicita
